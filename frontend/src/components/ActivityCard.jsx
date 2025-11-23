@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import { useState } from 'react';
+import {  useEffect } from 'react';
 import { toggleLike } from '../services/likeService';
 import UserAvatar from './UserAvatar';
 
@@ -9,6 +10,11 @@ function ActivityCard({ activity , hideActions = false}) {
   const [liked, setLiked] = useState(activity.user_liked || false);
   const [likeCount, setLikeCount] = useState(activity.like_count || 0);
   const [likeLoading, setLikeLoading] = useState(false);
+
+    useEffect(() => {
+    setLiked(activity.liked_by_user || false);
+    setLikeCount(activity.like_count || 0);
+  }, [activity.liked_by_user, activity.like_count]);
 
   // Zaman farkını hesapla
   const getTimeAgo = (date) => {

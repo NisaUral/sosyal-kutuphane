@@ -17,76 +17,46 @@ router.get('/feed', protect, async (req, res) => {
   try {
     const userId = req.user.id;
     const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 15;
+    const limit = parseInt(req.query.limit) || 20;
     const offset = (page - 1) * limit;
 
-    console.log('🔵 Feed getiriliyor:', { userId, page, limit });
+    console.log('📰 Feed getiriliyor:', { userId, page, limit });
 
     const connection = await getConnection();
 
-    // Takip edilen kullanıcıları al
-    const [followedUsers] = await connection.query(
-      'SELECT following_id FROM follows WHERE follower_id = ?',
-      [userId]
-    );
-
-    console.log('👥 Takip edilen kullanıcılar:', followedUsers);
-
-    const followedIds = followedUsers.map(f => f.following_id);
-
-    // Kendi ID'ni çıkar (kendini takip etsek bile gösterme)
-    const filteredIds = followedIds.filter(id => id !== userId);
-
-    console.log('✅ Filtrelenmiş ID\'ler (kendim hariç):', filteredIds);
-
-    if (filteredIds.length === 0) {
-      console.log('❌ Kimseyi takip etmiyorsun');
-      await connection.end();
-      return res.json({
-        activities: [],
-        totalPages: 0,
-        currentPage: page
-      });
-    }
-
-    const placeholders = filteredIds.map(() => '?').join(',');
-
-    // Aktiviteleri getir
     const [activities] = await connection.query(
       `SELECT 
-        a.id, a.activity_type, a.created_at,
-        u.id as user_id, u.username, u.email, u.avatar_url,
-        c.id as content_id, c.title, c.year, c.type, c.poster_url, c.external_id,
+        a.id, 
+        a.activity_type, 
+        a.created_at,
+        u.id as user_id, 
+        u.username, 
+        u.email, 
+        u.avatar_url,
+        c.id as content_id, 
+        c.title, 
+        c.year, 
+        c.type, 
+        c.poster_url, 
+        c.external_id,
         rat.score as rating_score,
         rev.review_text,
         (SELECT COUNT(*) FROM activity_likes WHERE activity_id = a.id) as like_count,
         (SELECT COUNT(*) FROM activity_likes WHERE activity_id = a.id AND user_id = ?) as liked_by_user
       FROM activities a
+      INNER JOIN follows f ON a.user_id = f.following_id
       INNER JOIN users u ON a.user_id = u.id
       INNER JOIN contents c ON a.content_id = c.id
       LEFT JOIN ratings rat ON a.rating_id = rat.id
       LEFT JOIN reviews rev ON a.review_id = rev.id
-      WHERE a.user_id IN (${placeholders})
+      WHERE f.follower_id = ?
       ORDER BY a.created_at DESC
       LIMIT ? OFFSET ?`,
-      [userId, ...filteredIds, limit, offset]
+      [userId, userId, limit, offset]
     );
-
-    console.log(`📊 ${activities.length} aktivite bulundu`);
-    console.log('👤 Aktivite sahipleri:', activities.map(a => ({ id: a.user_id, username: a.username })));
-
-    // Toplam sayı
-    const [countResult] = await connection.query(
-      `SELECT COUNT(*) as total FROM activities WHERE user_id IN (${placeholders})`,
-      filteredIds
-    );
-
-    const totalActivities = countResult[0].total;
-    const totalPages = Math.ceil(totalActivities / limit);
 
     await connection.end();
 
-    // Format
     const formattedActivities = activities.map(a => ({
       id: a.id,
       activity_type: a.activity_type,
@@ -111,10 +81,11 @@ router.get('/feed', protect, async (req, res) => {
       review: a.review_text ? { review_text: a.review_text } : null
     }));
 
+    console.log(`✅ ${formattedActivities.length} aktivite bulundu`);
+
     res.json({
-      activities: formattedActivities,
-      totalPages,
-      currentPage: page
+      success: true,
+      activities: formattedActivities
     });
 
   } catch (error) {
