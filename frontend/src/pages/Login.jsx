@@ -14,26 +14,35 @@ function Login() {
   const [focusedInput, setFocusedInput] = useState(null); // 'email' veya 'password'
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    setError('');
-    setLoading(true);
+  e.preventDefault();
+  console.log('🟢 Form submit');
+  setError('');
+  setLoading(true);
 
-    try {
-      const response = await loginUser({ email, password });
-      
-      if (!response || !response.success) {
-        throw new Error(response?.message || 'Giriş başarısız!');
-      }
-
-      login(response.user, response.token);
-      navigate('/feed');
-      
-    } catch (err) {
-      setError(typeof err === 'string' ? err : (err.message || 'Giriş başarısız. Lütfen bilgilerinizi kontrol edin.'));
-    }
+  try {
+    console.log('🟢 API çağrılıyor...', { email, password });
+    const response = await loginUser({ email, password });
+    console.log('🟢 Response:', response);
     
-    setLoading(false);
-  };
+    if (!response || !response.success) {
+      console.log('❌ Response başarısız!');
+      throw new Error(response?.message || 'Giriş başarısız!');
+    }
+
+    console.log('✅ Login başarılı, yönlendiriliyor...');
+    login(response.user, response.token);
+    navigate('/feed');
+    
+  } catch (err) {
+    console.log('❌ Catch bloğu:', err);
+    const errorMsg = typeof err === 'string' ? err : (err.message || 'Giriş başarısız. Lütfen bilgilerinizi kontrol edin.');
+    console.log('❌ Error mesajı:', errorMsg);
+    setError(errorMsg);
+  }
+  
+  setLoading(false);
+  console.log('🟢 Loading false');
+};
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-900 flex items-center justify-center px-4 relative overflow-hidden">
@@ -44,7 +53,7 @@ function Login() {
         <div className="absolute bottom-0 left-1/2 w-96 h-96 bg-pink-500 rounded-full mix-blend-multiply filter blur-3xl animate-blob animation-delay-4000"></div>
       </div>
 
-      <div className="relative bg-white dark:bg-gray-800 rounded-3xl shadow-2xl w-full max-w-md p-8 backdrop-blur-sm bg-opacity-95">
+      <div className="relative bg-white rounded-3xl shadow-2xl w-full max-w-md p-8 backdrop-blur-sm bg-opacity-95">
         
         {/* Animated Eyes */}
         <div className="flex justify-center mb-6">
@@ -84,17 +93,17 @@ function Login() {
         {/* Logo & Title */}
         <div className="text-center mb-8">
           
-          <h1 className="text-3xl font-bold text-gray-800 dark:text-white">
+          <h1 className="text-3xl font-bold text-gray-800 ">
             Sosyal Kütüphane
           </h1>
-          <p className="text-gray-600 dark:text-gray-400 mt-2">
+          <p className="text-gray-600 mt-2">
             Hesabınıza giriş yapın
           </p>
         </div>
 
         {/* Error Message */}
         {error && (
-          <div className="mb-4 p-3 bg-red-100 dark:bg-red-900 border border-red-400 dark:border-red-600 text-red-700 dark:text-red-200 rounded-lg">
+          <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700  rounded-lg">
             {error}
           </div>
         )}
@@ -104,7 +113,7 @@ function Login() {
           
           {/* Email */}
           <div>
-            <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+            <label className="block text-sm font-semibold text-gray-700 mb-2">
               E-posta
             </label>
             <input
@@ -113,7 +122,7 @@ function Login() {
               onChange={(e) => setEmail(e.target.value)}
               onFocus={() => setFocusedInput('email')}
               onBlur={() => setFocusedInput(null)}
-              className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-xl focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-200 dark:focus:ring-blue-800 transition outline-none"
+              className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition outline-none"
               placeholder="ornek@email.com"
               required
             />
@@ -121,7 +130,7 @@ function Login() {
 
           {/* Password */}
           <div>
-            <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+            <label className="block text-sm font-semibold text-gray-700 mb-2">
               Şifre
             </label>
             <input
@@ -130,7 +139,7 @@ function Login() {
               onChange={(e) => setPassword(e.target.value)}
               onFocus={() => setFocusedInput('password')}
               onBlur={() => setFocusedInput(null)}
-              className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-xl focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-200 dark:focus:ring-blue-800 transition outline-none"
+              className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition outline-none"
               placeholder="••••••••"
               required
             />
@@ -140,7 +149,7 @@ function Login() {
           <div className="text-right">
             <Link
               to="/forgot-password"
-              className="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300"
+              className="text-sm text-blue-600 hover:text-blue-700 "
             >
               Şifremi Unuttum
             </Link>
@@ -158,9 +167,9 @@ function Login() {
 
         {/* Register Link */}
         <div className="mt-6 text-center">
-          <p className="text-gray-600 dark:text-gray-400">
+          <p className="text-gray-600">
             Hesabınız yok mu?{' '}
-            <Link to="/register" className="text-blue-600 dark:text-blue-400 font-semibold hover:underline">
+            <Link to="/register" className="text-blue-600  font-semibold hover:underline">
               Kayıt Ol
             </Link>
           </p>

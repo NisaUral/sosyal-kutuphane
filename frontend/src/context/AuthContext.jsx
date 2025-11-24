@@ -73,6 +73,9 @@ export function AuthProvider({ children }) {
     console.log('🚪 Logout yapılıyor');
     sessionStorage.removeItem('token');
     sessionStorage.removeItem('user');
+
+    document.documentElement.classList.remove('dark');
+
     setUser(null);
     navigate('/login');
   };

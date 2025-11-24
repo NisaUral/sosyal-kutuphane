@@ -16,6 +16,7 @@ function Explore() {
   const [filterYear, setFilterYear] = useState('');
   const [filterGenre, setFilterGenre] = useState('');
   const [filterRating, setFilterRating] = useState('');
+  const [topBooks, setTopBooks] = useState([]);
 
   // Arama fonksiyonu
   const handleSearch = useCallback(async (query = searchQuery, tab = activeTab) => {
@@ -51,7 +52,7 @@ function Explore() {
     }, 500); // 500ms debounce
 
     return () => clearTimeout(timer);
-  }, [searchQuery, activeTab]);
+  }, [searchQuery]);
 
   // URL'den gelen arama
   useEffect(() => {
@@ -80,13 +81,18 @@ function Explore() {
       setLoading(true);
       
       if (tab === 'movie') {
-        try {
-          const data = await getPopularMovies();
-          setResults(data.movies || []);
-        } catch (error) {
-          console.error('Filmler yüklenemedi:', error);
-          setResults([]);
-        }
+       try {
+    const [moviesData, booksData] = await Promise.all([
+      getPopularMovies(),
+      getTopRatedBooks()
+    ]);
+    setResults(moviesData.movies || []);
+    setTopBooks(booksData.results || []);
+  } catch (error) {
+    console.error('İçerikler yüklenemedi:', error);
+    setResults([]);
+    setTopBooks([]);
+  }
       } else if (tab === 'book') {
         try {
           const data = await getTopRatedBooks();
@@ -111,12 +117,28 @@ function Explore() {
   };
 
   // İlk yüklemede popüler filmleri göster
-  useEffect(() => {
-    if (!queryParam) {
-      handleTabChange('all');
-    }
-  }, []);
-
+useEffect(() => {
+  if (!queryParam) {
+    const loadInitialContent = async () => {
+      setLoading(true);
+      try {
+        const [moviesData, booksData] = await Promise.all([
+          getPopularMovies(),
+          getTopRatedBooks()
+        ]);
+        setResults(moviesData.movies || []);
+        setTopBooks(booksData.results || []);
+      } catch (error) {
+        console.error('İlk yükleme hatası:', error);
+        setResults([]);
+        setTopBooks([]);
+      }
+      setLoading(false);
+    };
+    
+    loadInitialContent();
+  }
+}, []); // Boş bağımlılık - sadece ilk mount'ta çalışır
   // Filtrelenmiş sonuçlar
   const filteredResults = results.filter(item => {
     if (filterYear && item.year && item.year.toString() !== filterYear.toString()) {
@@ -289,19 +311,38 @@ function Explore() {
 
         {!loading && (filteredResults.length > 0 || results.length > 0) && (
           <div>
-            <h2 className="text-xl font-semibold text-gray-800 dark:text-white mb-4">
-              {searchQuery.trim()
-                ? `Arama Sonuçları (${filteredResults.length}${results.length !== filteredResults.length ? ` / ${results.length}` : ''})`
-                : activeTab === 'book'
-                ? '📚 En Yüksek Puanlı Kitaplar'
-                : '🔥 Popüler Filmler'}
-            </h2>
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-              {filteredResults.map((item, index) => (
-                <ContentCard key={`${item.external_id}-${index}`} content={item} />
-              ))}
-            </div>
-          </div>
+    {/* Filmler Bölümü */}
+    <div className="mb-8">
+      <h2 className="text-xl font-semibold text-gray-800 dark:text-white mb-4">
+        {searchQuery.trim()
+          ? `Arama Sonuçları (${filteredResults.length})`
+          : activeTab === 'book'
+          ? '📚 En Yüksek Puanlı Kitaplar'
+          : activeTab === 'all'
+          ? '🔥 Popüler Filmler'
+          : '🔥 Popüler Filmler'}
+      </h2>
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+        {filteredResults.map((item, index) => (
+          <ContentCard key={`${item.external_id}-${index}`} content={item} />
+        ))}
+      </div>
+    </div>
+
+    {/* Kitaplar Bölümü - Sadece "Tümü" sekmesinde */}
+    {activeTab === 'all' && !searchQuery.trim() && topBooks.length > 0 && (
+      <div>
+        <h2 className="text-xl font-semibold text-gray-800 dark:text-white mb-4">
+          📚 En Yüksek Puanlı Kitaplar
+        </h2>
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+          {topBooks.map((item, index) => (
+            <ContentCard key={`book-${item.external_id}-${index}`} content={item} />
+          ))}
+        </div>
+      </div>
+    )}
+  </div>
         )}
 
         {!loading && filteredResults.length === 0 && results.length > 0 && (
