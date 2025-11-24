@@ -1,4 +1,5 @@
 import api from './api';
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
 
 // Kullanıcı Profilini Getir
 export const getUserProfile = async (userId) => {
@@ -88,13 +89,27 @@ export const updateProfile = async (username, email, avatar_url, bio) => {  // �
 };
 
 // Avatar yükle
-export const uploadAvatar = async (avatar_url) => {
-  try {
-    const response = await api.post('/users/avatar', { avatar_url });
-    return response.data;
-  } catch (error) {
-    throw error.response?.data?.message || 'Avatar yüklenemedi!';
+// Avatar yükle
+export const uploadAvatar = async (file) => {
+  const formData = new FormData();
+  formData.append('avatar', file);
+
+  const response = await fetch(`${API_URL}/users/avatar`, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${localStorage.getItem('token')}`
+      // Content-Type EKLEME! FormData otomatik ayarlar
+    },
+    body: formData
+  });
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    throw new Error(data.message || 'Avatar yüklenemedi!');
   }
+
+  return data;
 };
 
 // Önerilen kullanıcılar
@@ -117,3 +132,4 @@ export const getUserStats = async (userId) => {
     throw error.response?.data?.message || 'İstatistikler yüklenemedi!';
   }
 };
+

@@ -1,6 +1,7 @@
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
+const path = require('path');
 
 // TEST: .env okunuyor mu?
 console.log('🔑 TMDB_API_KEY:', process.env.TMDB_API_KEY ? 'VAR ✅' : 'YOK ❌');
@@ -36,6 +37,7 @@ app.use('/api/follows', followRoutes);
 app.use('/api/library', libraryRoutes);
 app.use('/api/likes', likeRoutes);
 app.use('/api/lists', listRoutes);
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 app.get('/', (req, res) => {
   res.json({

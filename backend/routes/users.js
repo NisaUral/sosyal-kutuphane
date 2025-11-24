@@ -2,6 +2,46 @@ const express = require('express');
 const router = express.Router();
 const mysql = require('mysql2/promise');
 const { protect } = require('../middleware/authMiddleware');
+const multer = require('multer'); // ← YENİ
+const path = require('path'); // ← YENİ
+const fs = require('fs');
+
+
+// Multer ayarları - Avatar yükleme
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    const uploadDir = 'uploads/avatars';
+    // Klasör yoksa oluştur
+    if (!fs.existsSync(uploadDir)) {
+      fs.mkdirSync(uploadDir, { recursive: true });
+    }
+    cb(null, uploadDir);
+  },
+  filename: function (req, file, cb) {
+    // Dosya adı: userId-timestamp.uzantı
+    const uniqueName = `${req.user.id}-${Date.now()}${path.extname(file.originalname)}`;
+    cb(null, uniqueName);
+  }
+});
+
+// Dosya filtresi - Sadece resim
+const fileFilter = (req, file, cb) => {
+  const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+  
+  if (allowedTypes.includes(file.mimetype)) {
+    cb(null, true);
+  } else {
+    cb(new Error('Sadece resim dosyaları yüklenebilir (JPEG, PNG, GIF, WEBP)!'), false);
+  }
+};
+
+const upload = multer({
+  storage: storage,
+  fileFilter: fileFilter,
+  limits: {
+    fileSize: 5 * 1024 * 1024 // 5MB limit
+  }
+});
 
 // Veritabanı bağlantısı yardımcı fonksiyonu
 const getConnection = async () => {
@@ -234,33 +274,66 @@ router.put('/profile', protect, async (req, res) => {
 });
 
 // Avatar Yükle
-router.post('/avatar', protect, async (req, res) => {
+// Avatar Yükle - DOSYA İLE
+router.post('/avatar', protect, upload.single('avatar'), async (req, res) => {
   try {
-    const { avatar_url } = req.body;
-
-    if (!avatar_url) {
-      return res.status(400).json({ message: 'Avatar URL gerekli!' });
+    if (!req.file) {
+      return res.status(400).json({ message: 'Dosya yüklenmedi!' });
     }
 
     const userId = req.user.id;
     const connection = await getConnection();
 
+    // Eski avatar'ı sil (varsa ve sunucudaysa)
+    const [oldUser] = await connection.query(
+      'SELECT avatar_url FROM users WHERE id = ?',
+      [userId]
+    );
+
+    if (oldUser[0]?.avatar_url && oldUser[0].avatar_url.startsWith('/uploads/')) {
+      const oldPath = path.join(__dirname, '..', oldUser[0].avatar_url);
+      if (fs.existsSync(oldPath)) {
+        fs.unlinkSync(oldPath);
+      }
+    }
+
+    // Yeni avatar URL'i
+    const avatar_url = `/uploads/avatars/${req.file.filename}`;
+
+    // Veritabanını güncelle
     await connection.query(
       'UPDATE users SET avatar_url = ? WHERE id = ?',
       [avatar_url, userId]
+    );
+
+    // Güncellenmiş kullanıcıyı al
+    const [users] = await connection.query(
+      'SELECT id, username, email, avatar_url, bio, created_at FROM users WHERE id = ?',
+      [userId]
     );
 
     await connection.end();
 
     res.json({
       success: true,
-      message: 'Avatar güncellendi!',
-      avatar_url
+      message: 'Avatar yüklendi!',
+      user: users[0]
     });
 
   } catch (error) {
     console.error('Avatar yükleme hatası:', error);
-    res.status(500).json({ message: 'Sunucu hatası' });
+    
+    // Hata varsa yüklenen dosyayı sil
+    if (req.file) {
+      const filePath = path.join(__dirname, '..', 'uploads', 'avatars', req.file.filename);
+      if (fs.existsSync(filePath)) {
+        fs.unlinkSync(filePath);
+      }
+    }
+
+    res.status(500).json({ 
+      message: error.message || 'Avatar yüklenirken hata oluştu!' 
+    });
   }
 });
 

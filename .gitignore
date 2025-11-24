@@ -42,3 +42,11 @@ desktop.ini
 
 # Logs
 *.log
+
+#cıktı
+
+dist/
+coverage/
+
+#avatar
+uploads/
