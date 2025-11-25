@@ -8,6 +8,7 @@ import { getUserLists, addToList } from '../services/listService';
 import { useAuth } from '../context/AuthContext';
 import api from '../services/api';
 import { addReview, updateReview, deleteReview } from '../services/reviewService';
+import { showError, showInfo, showSuccess } from '../utils/toast';
 
 function ContentDetail() {
   const { type, externalId } = useParams();
@@ -77,19 +78,19 @@ function ContentDetail() {
         score: score * 2
       });
       setUserRating(score);
-      alert(`${score * 2}/10 puan verdiniz! 🎉`);
+      showSuccess(`${score * 2}/10 puan verdiniz! `);
     } catch (error) {
-      alert('Puan verilemedi: ' + (error.response?.data?.message || error.message));
+      showError('Puan verilemedi: ' + (error.response?.data?.message || error.message));
     }
   };
 
   const handleAddToListClick = async (selectedListId) => {
     try {
       await addToList(selectedListId, content.id);
-      alert('Listeye eklendi! 📝');
+      showSuccess('Listeye eklendi! ');
       setShowListModal(false);
     } catch (error) {
-      alert('Hata: ' + error);
+      showError('Hata: ' + error);
     }
   };
 
@@ -97,7 +98,7 @@ function ContentDetail() {
     e.preventDefault();
     
     if (!newListName.trim()) {
-      alert('Liste adı gerekli!');
+      showInfo('Liste adı gerekli!');
       return;
     }
     
@@ -108,7 +109,7 @@ function ContentDetail() {
       
       await addToList(response.listId, content.id);
       
-      alert('Liste oluşturuldu ve içerik eklendi! 📝');
+      showSuccess('Liste oluşturuldu ve içerik eklendi! ');
       setNewListName('');
       setNewListDescription('');
       setShowCreateListModal(false);
@@ -117,7 +118,7 @@ function ContentDetail() {
       const listData = await getUserLists(user.id);
       setUserLists(listData.lists || []);
     } catch (error) {
-      alert('Hata: ' + error);
+      showError('Hata: ' + error);
     }
     setCreatingList(false);
   };
@@ -141,12 +142,12 @@ function ContentDetail() {
       });
       
       setReviewText('');
-      alert('Yorum eklendi! 🎉');
+      showSuccess('Yorum eklendi! ');
       
       const reviewData = await getReviews(content.id);
       setReviews(reviewData.reviews || []);
     } catch (error) {
-      alert('Yorum eklenemedi: ' + (error.response?.data?.message || error.message));
+      showError('Yorum eklenemedi: ' + (error.response?.data?.message || error.message));
     }
   };
 
@@ -156,9 +157,9 @@ function ContentDetail() {
         content_id: content.id,
         status: status
       });
-      alert('Kütüphaneye eklendi! 📚');
+      showSuccess('Kütüphaneye eklendi! ');
     } catch (error) {
-      alert('Eklenemedi: ' + (error.response?.data?.message || error.message));
+      showError('Eklenemedi: ' + (error.response?.data?.message || error.message));
     }
   };
 
@@ -172,7 +173,7 @@ function ContentDetail() {
 
 const handleUpdateReview = async () => {
   if (!editingReviewText.trim()) {
-    alert('Yorum boş olamaz!');
+    showError('Yorum boş olamaz!');
     return;
   }
 
@@ -187,9 +188,9 @@ const handleUpdateReview = async () => {
     setEditingReviewId(null);
     setEditingReviewText('');
     
-    alert('Yorum güncellendi! ✅');
+    showSuccess('Yorum güncellendi! ✅');
   } catch (error) {
-    alert('Hata: ' + error);
+    showError('Hata: ' + error);
   }
 };
 
@@ -205,9 +206,9 @@ const handleDeleteReview = async (reviewId) => {
     const data = await getReviews(content.id);
     setReviews(data.reviews || []);
     
-    alert('Yorum silindi! 🗑️');
+    showSuccess('Yorum silindi! ');
   } catch (error) {
-    alert('Hata: ' + error);
+    showError('Hata: ' + error);
   }
 };
 

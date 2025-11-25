@@ -1,6 +1,8 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
+import { ToastContainer } from 'react-toastify'; // ← EKLE
+import 'react-toastify/dist/ReactToastify.css';
 
 // Pages
 import Login from './pages/Login';
@@ -146,6 +148,18 @@ function App() {
       <ThemeProvider>
         <AuthProvider>
           <AppRoutes />
+           <ToastContainer
+          position="top-right"
+          autoClose={3000}
+          hideProgressBar={false}
+          newestOnTop={false}
+          closeOnClick
+          rtl={false}
+          pauseOnFocusLoss
+          draggable
+          pauseOnHover
+          theme="colored"
+        />
         </AuthProvider>
       </ThemeProvider>
     </Router>
