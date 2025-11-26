@@ -170,6 +170,30 @@ useEffect(() => {
     return true;
   });
 
+  // DEBUG - Sadece filtre değişince yazdır
+if (filterGenre === 'Aksiyon' || filterGenre === 'Kurgu') {
+  console.log('📊 Filtreleme Durumu:');
+  console.log('activeTab:', activeTab);
+  console.log('filterGenre:', filterGenre);
+  console.log('results.length:', results.length);
+  console.log('filteredResults.length:', filteredResults.length);
+  
+  // İlk 2 filmin/kitabın türlerini göster
+  if (results.length > 0) {
+    console.log('🎬 İLK FİLM:');
+    console.log('Title:', results[0].title);
+    console.log('Type:', results[0].type);
+    console.log('Genres:', results[0].genres);
+    console.log('Categories:', results[0].categories);
+    
+    if (results.length > 1) {
+      console.log('🎬 İKİNCİ FİLM:');
+      console.log('Title:', results[1].title);
+      console.log('Genres:', results[1].genres);
+    }
+  }
+}
+
   return (
     <Layout>
       <div>

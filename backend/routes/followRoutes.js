@@ -17,6 +17,10 @@ router.post('/:userId', protect, async (req, res) => {
   try {
     const followerId = req.user.id;
     const followingId = parseInt(req.params.userId);
+    console.log('🔵 TAKİP İSTEĞİ GELDİ');
+    console.log('👤 Follower ID:', followerId);
+    console.log('👥 Following ID:', followingId);
+
 
     if (followerId === followingId) {
       return res.status(400).json({ message: 'Kendinizi takip edemezsiniz!' });
@@ -36,10 +40,11 @@ router.post('/:userId', protect, async (req, res) => {
     }
 
     // Takip et
-    await connection.query(
-      'INSERT INTO follows (follower_id, following_id) VALUES (?, ?)',
-      [followerId, followingId]
-    );
+   // Takip et
+await connection.query(
+  'INSERT INTO follows (follower_id, following_id, created_at, updated_at) VALUES (?, ?, NOW(), NOW())',
+  [followerId, followingId]
+);
 
     await connection.end();
 
