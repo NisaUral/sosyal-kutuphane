@@ -63,3 +63,15 @@ export const getTopRatedBooks = async () => {
     throw error.response?.data?.message || 'Kitaplar yüklenemedi!';
   }
 };
+
+// Türe göre filmler
+export const getMoviesByGenre = async (genre) => {
+  try {
+    const response = await api.get('/contents/movies/genre', {
+      params: { genre }
+    });
+    return response.data;
+  } catch (error) {
+    throw error.response?.data?.message || 'Filmler alınamadı!';
+  }
+};

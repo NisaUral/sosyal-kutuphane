@@ -236,6 +236,34 @@ exports.getTopRatedBooks = async (req, res) => {
     });
   }
 };
+exports.getMoviesByGenre = async (req, res) => {
+  try {
+    const { genre } = req.query;
+    
+    if (!genre) {
+      return res.status(400).json({
+        success: false,
+        message: 'Tür belirtilmedi!'
+      });
+    }
+
+    const movies = await tmdbService.getMoviesByGenre(genre);
+
+    res.status(200).json({
+      success: true,
+      count: movies.length,
+      movies
+    });
+
+  } catch (error) {
+    console.error('Türe göre film hatası:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Filmler alınamadı',
+      error: error.message
+    });
+  }
+};
 
 // ÇOK ÖNEMLİ: EXPORT!
 module.exports = {
@@ -243,5 +271,6 @@ module.exports = {
   getContentDetails: exports.getContentDetails,
   getPopularMovies: exports.getPopularMovies,
   getTopRated: exports.getTopRated,
-  getTopRatedBooks: exports.getTopRatedBooks
+  getTopRatedBooks: exports.getTopRatedBooks,
+  getMoviesByGenre: exports.getMoviesByGenre
 };
