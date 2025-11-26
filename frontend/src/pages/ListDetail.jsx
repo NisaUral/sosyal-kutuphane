@@ -4,6 +4,7 @@ import Layout from '../components/Layout';
 import ContentCard from '../components/ContentCard';
 import { getListDetails, removeFromList } from '../services/listService';
 import { useAuth } from '../context/AuthContext';
+import { showError, showInfo, showWarning } from '../utils/toast';
 
 function ListDetail() {
   const { listId } = useParams();
@@ -24,7 +25,7 @@ function ListDetail() {
       setList(data.list);
     } catch (error) {
       console.error('Liste yüklenemedi:', error);
-      alert('Liste bulunamadı!');
+      showWarning('Liste bulunamadı!');
       navigate('/lists');
     }
     setLoading(false);
@@ -37,10 +38,10 @@ function ListDetail() {
     
     try {
       await removeFromList(listId, contentId);
-      alert('Listeden çıkarıldı!');
+      showInfo('Listeden çıkarıldı!');
       loadList();
     } catch (error) {
-      alert('Hata: ' + error);
+      showError('Hata: ' + error);
     }
   };
 

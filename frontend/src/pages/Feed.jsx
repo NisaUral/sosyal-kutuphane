@@ -7,6 +7,7 @@ import EmptyState from '../components/EmptyState';
 import UserAvatar from '../components/UserAvatar';
 import { getFeed } from '../services/activityService';
 import { getSuggestedUsers, followUser } from '../services/userService';
+import { showError, showSuccess } from '../utils/toast';
 
 function Feed() {
   const [activities, setActivities] = useState([]);
@@ -54,14 +55,14 @@ function Feed() {
     await followUser(userId);
     loadSuggestions(); // Önerileri yenile
     loadActivities(1); // Feed'i yenile
-    alert('Takip ediyorsunuz! 🎉');
+    showSuccess('Takip ediyorsunuz! ');
     
     // Sayfayı yenile (istatistikler güncellensin)
     setTimeout(() => {
       window.location.reload();
     }, 1000);
   } catch (error) {
-    alert('Hata: ' + error);
+    showError('Hata: ' + error);
   }
   setFollowLoading({ ...followLoading, [userId]: false });
 };

@@ -8,6 +8,7 @@ import ActivityCard from '../components/ActivityCard';
 import LoadingSpinner from '../components/LoadingSpinner';
 import EmptyState from '../components/EmptyState';
 import UserAvatar from '../components/UserAvatar';
+import { showSuccess, showError ,showInfo} from '../utils/toast';
 
 function Profile() {
   const { userId } = useParams();
@@ -78,26 +79,28 @@ const handleTabChange = (tab) => {
   }
 };
 
-  const handleFollowToggle = async () => {
-    try {
-      setFollowLoading(true);
-      
-      if (isFollowing) {
-        await unfollowUser(userId);
-        setIsFollowing(false);
-        alert('Takibi bıraktınız');
-      } else {
-        await followUser(userId);
-        setIsFollowing(true);
-        alert('Takip etmeye başladınız! 🎉');
-      }
-      
-      setFollowLoading(false);
-    } catch (error) {
-      alert('Hata: ' + error);
-      setFollowLoading(false);
+ 
+
+const handleFollowToggle = async () => {
+  try {
+    setFollowLoading(true);
+    
+    if (isFollowing) {
+      await unfollowUser(userId);
+      setIsFollowing(false);
+      showInfo('Takibi bıraktınız');
+    } else {
+      await followUser(userId);
+      setIsFollowing(true);
+      showSuccess('Takip ediyorsunuz! 🎉');
     }
-  };
+    
+    setFollowLoading(false);
+  } catch (error) {
+    showError('Hata: ' + error);
+    setFollowLoading(false);
+  }
+};
 
   const getFilteredLibrary = () => {
     if (libraryFilter === 'all') return library;

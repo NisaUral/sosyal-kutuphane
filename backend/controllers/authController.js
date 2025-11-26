@@ -138,7 +138,9 @@ exports.register = async (req, res) => {
 
       email,
 
-      password: hashedPassword
+      password: hashedPassword,
+
+      avatar_url: '/default-avatar.jpg'
 
     });
 

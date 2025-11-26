@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { forgotPassword } from '../services/authService';
+import { showError, showInfo, showWarning } from '../utils/toast';
 
 function ForgotPassword() {
   const [email, setEmail] = useState('');
@@ -12,7 +13,7 @@ function ForgotPassword() {
     e.preventDefault();
 
     if (!email.trim()) {
-      alert('Email gerekli!');
+      showWarning('Email gerekli!');
       return;
     }
 
@@ -26,9 +27,9 @@ function ForgotPassword() {
         setResetToken(response.resetToken);
       }
       
-      alert('Şifre sıfırlama kodu oluşturuldu!');
+      showInfo('Şifre sıfırlama kodu oluşturuldu!');
     } catch (error) {
-      alert('Hata: ' + error);
+      showError('Hata: ' + error);
     }
     setLoading(false);
   };

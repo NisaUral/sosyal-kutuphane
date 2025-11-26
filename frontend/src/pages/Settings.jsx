@@ -108,10 +108,10 @@ const handleUploadAvatar = async () => {
       // AuthContext'i güncelle
       updateUser(response.user);
       
-      alert('Profil güncellendi! ✅');
+      showSuccess('Profil güncellendi! ✅');
       navigate(`/profile/${user.id}`);
     } catch (error) {
-      alert('Hata: ' + error);
+      showError('Hata: ' + error);
     }
     setLoading(false);
   };

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { resetPassword } from '../services/authService';
+import { showError, showSuccess } from '../utils/toast';
 
 function ResetPassword() {
   const navigate = useNavigate();
@@ -49,32 +50,32 @@ function ResetPassword() {
 
     // YENİ: Süre dolduysa göndermeyi engelle
     if (timer <= 0) {
-      alert('Sıfırlama kodunun süresi doldu. Lütfen yeni bir kod isteyin.');
+      showError('Sıfırlama kodunun süresi doldu. Lütfen yeni bir kod isteyin.');
       return;
     }
 
     if (!email || !resetToken || !newPassword) {
-      alert('Tüm alanları doldurun!');
+      showError('Tüm alanları doldurun!');
       return;
     }
 
     if (newPassword.length < 6) {
-      alert('Şifre en az 6 karakter olmalı!');
+      showError('Şifre en az 6 karakter olmalı!');
       return;
     }
 
     if (newPassword !== confirmPassword) {
-      alert('Şifreler eşleşmiyor!');
+      showError('Şifreler eşleşmiyor!');
       return;
     }
 
     setLoading(true);
     try {
       await resetPassword(email, resetToken, newPassword);
-      alert('Şifre başarıyla değiştirildi! 🎉');
+      showSuccess('Şifre başarıyla değiştirildi! 🎉');
       navigate('/login');
     } catch (error) {
-      alert('Hata: ' + error);
+      showError('Hata: ' + error);
     }
     setLoading(false);
   };

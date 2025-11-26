@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import Layout from '../components/Layout';
 import { useAuth } from '../context/AuthContext';
 import { getUserLists, createList, deleteList } from '../services/listService';
+import { showError, showInfo } from '../utils/toast';
 
 function MyLists() {
   const { user } = useAuth();
@@ -36,20 +37,20 @@ function MyLists() {
     e.preventDefault();
     
     if (!newListName.trim()) {
-      alert('Liste adı gerekli!');
+      showError('Liste adı gerekli!');
       return;
     }
     
     setCreating(true);
     try {
       await createList(newListName, newListDescription);
-      alert('Liste oluşturuldu! 📝');
+      showInfo('Liste oluşturuldu! 📝');
       setNewListName('');
       setNewListDescription('');
       setShowCreateModal(false);
       loadLists();
     } catch (error) {
-      alert('Hata: ' + error);
+      showError('Hata: ' + error);
     }
     setCreating(false);
   };
@@ -61,10 +62,10 @@ function MyLists() {
     
     try {
       await deleteList(listId);
-      alert('Liste silindi!');
+      showInfo('Liste silindi!');
       loadLists();
     } catch (error) {
-      alert('Hata: ' + error);
+      showError('Hata: ' + error);
     }
   };
 
