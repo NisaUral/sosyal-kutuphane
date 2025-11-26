@@ -113,7 +113,7 @@ exports.getPopularMovies = async () => {
       }
     });
 
-    const movies = response.data.results.slice(0, 20).map(movie => ({
+    const movies = response.data.results.slice(0, 40).map(movie => ({
       external_id: movie.id.toString(),
       type: 'movie',
       title: movie.title,
