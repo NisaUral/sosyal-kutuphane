@@ -75,3 +75,15 @@ export const getMoviesByGenre = async (genre) => {
     throw error.response?.data?.message || 'Filmler alınamadı!';
   }
 };
+
+// Kategoriye göre kitaplar
+export const getBooksByCategory = async (category) => {
+  try {
+    const response = await api.get('/contents/books/category', {
+      params: { category }
+    });
+    return response.data;
+  } catch (error) {
+    throw error.response?.data?.message || 'Kitaplar alınamadı!';
+  }
+};

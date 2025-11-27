@@ -55,6 +55,14 @@ router.get('/feed', protect, async (req, res) => {
       [userId, userId, limit, offset]
     );
 
+    const [countResult] = await connection.query(
+  `SELECT COUNT(*) as total
+   FROM activities a
+   INNER JOIN follows f ON a.user_id = f.following_id
+   WHERE f.follower_id = ?`,
+  [userId]
+);
+
     await connection.end();
 
     const formattedActivities = activities.map(a => ({
@@ -82,11 +90,16 @@ router.get('/feed', protect, async (req, res) => {
     }));
 
     console.log(`✅ ${formattedActivities.length} aktivite bulundu`);
+const total = countResult[0].total;
+const totalPages = Math.ceil(total / limit);
 
-    res.json({
-      success: true,
-      activities: formattedActivities
-    });
+res.json({
+  success: true,
+  activities: formattedActivities,
+  page: page,
+  totalPages: totalPages,
+  total: total
+});
 
   } catch (error) {
     console.error('❌ Feed hatası:', error);

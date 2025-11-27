@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext';
 //import { getUserLibrary } from '../services/userService';
 import {  getUserLibrary,getSuggestedUsers, followUser ,getUserStats} from '../services/userService';
 import UserAvatar from './UserAvatar';
+import { showError, showSuccess } from '../utils/toast';
 
 function Sidebar() {
   const location = useLocation();
@@ -84,9 +85,9 @@ const handleFollowInModal = async (userId) => {
       console.error('Stats güncellenemedi:', statsError);
     }
     
-    alert('Takip ediyorsunuz! 🎉');
+    showSuccess('Takip ediyorsunuz! ');
   } catch (error) {
-    alert('Hata: ' + error);
+    showError('Hata: ' + error);
   }
   setFollowLoading({ ...followLoading, [userId]: false });
 };

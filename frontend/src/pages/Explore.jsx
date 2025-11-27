@@ -1,8 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import Layout from '../components/Layout';
-import { searchContent, getPopularMovies, getTopRatedBooks , getMoviesByGenre} from '../services/contentService';
-
+import { searchContent, getPopularMovies, getTopRatedBooks, getMoviesByGenre, getBooksByCategory } from '../services/contentService';
 
 function Explore() {
   const navigate = useNavigate();
@@ -41,7 +40,20 @@ const [showFilters, setShowFilters] = useState(false);
   }, [searchQuery, activeTab]);
 
   // ANLIK ARAMA - searchQuery değişince 500ms sonra ara
-  
+  // ANLIK ARAMA - searchQuery değişince 500ms sonra ara
+useEffect(() => {
+  const timer = setTimeout(() => {
+    if (searchQuery.trim()) {
+      handleSearch(searchQuery, activeTab);
+    } else if (!filterGenre) {
+      // Arama boşsa VE filtre yoksa popüler içerikleri göster
+      setResults([]);
+      handleTabChange(activeTab);
+    }
+  }, 500); // 500ms debounce
+
+  return () => clearTimeout(timer);
+}, [searchQuery, activeTab]);
      // Filtre değişince türe göre ara
 
   // URL'den gelen arama
@@ -137,17 +149,19 @@ useEffect(() => {
 
 useEffect(() => {
   const filterContent = async () => {
-    console.log('🟢 useEffect ÇALIŞTI!');
-  console.log('filterGenre:', filterGenre);
-  console.log('searchQuery.trim():', searchQuery.trim());
-  console.log('activeTab:', activeTab);
     // Sadece tür filtresi varsa ve arama yoksa
-    if (filterGenre && !searchQuery.trim() && activeTab === 'movie') {
+    if (filterGenre && !searchQuery.trim()) {
       setLoading(true);
       try {
-        console.log('🔍 Türe göre arama yapılıyor:', filterGenre);
-        const data = await getMoviesByGenre(filterGenre);
-        setResults(data.movies || []);
+        if (activeTab === 'movie') {
+          console.log('🎬 Film türüne göre arama:', filterGenre);
+          const data = await getMoviesByGenre(filterGenre);
+          setResults(data.movies || []);
+        } else if (activeTab === 'book') {
+          console.log('📚 Kitap kategorisine göre arama:', filterGenre);
+          const data = await getBooksByCategory(filterGenre);
+          setResults(data.books || []);
+        }
       } catch (error) {
         console.error('Filtre hatası:', error);
       }
@@ -161,6 +175,13 @@ useEffect(() => {
 
   // Filtrelenmiş sonuçlar
   const filteredResults = results.filter(item => {
+    console.log('🔍 Filtreleme:', {
+    title: item.title,
+    year: item.year,
+    vote_average: item.vote_average,
+    filterRating: filterRating,
+    puanKontrol: filterRating ? item.vote_average >= parseFloat(filterRating) : true
+  });
     if (filterYear && item.year && item.year.toString() !== filterYear.toString()) {
       return false;
     }
@@ -211,7 +232,7 @@ useEffect(() => {
       <div>
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-800 dark:text-white mb-4">
-            🔍 Keşfet
+             Keşfet
           </h1>
           
           <form onSubmit={handleSubmit} className="mb-4">
@@ -231,20 +252,22 @@ useEffect(() => {
                 Ara
               </button>
 
+              {/* FİLTRE BUTONU - YENİ EKLE */}
+<div className="mb-4">
+  <button
+    onClick={() => setShowFilters(!showFilters)}
+    className="bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 px-8 py-3 rounded-xl font-semibold hover:bg-gray-200 dark:hover:bg-gray-600 transition flex items-center gap-2"
+  >
+    
+    <span>{showFilters ? 'Filtreleri Gizle' : 'Filtrele'}</span>
+  </button>
+</div>
+
             </div>
 
             </form>
 
-{/* FİLTRE BUTONU - YENİ EKLE */}
-<div className="mb-4">
-  <button
-    onClick={() => setShowFilters(!showFilters)}
-    className="bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 px-6 py-3 rounded-xl font-semibold hover:bg-gray-200 dark:hover:bg-gray-600 transition flex items-center gap-2"
-  >
-    <span>🔍</span>
-    <span>{showFilters ? 'Filtreleri Gizle' : 'Filtrele'}</span>
-  </button>
-</div>
+
 
 {/* FİLTRE PANELİ */}
 {showFilters && (
@@ -262,6 +285,7 @@ useEffect(() => {
           onChange={(e) => setFilterYear(e.target.value)}
           className="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400"
         />
+
       </div>
 
       <div>
@@ -269,60 +293,104 @@ useEffect(() => {
     Tür
   </label>
   <select
-    value={filterGenre}
-    onChange={(e) => setFilterGenre(e.target.value)}
-    className="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400"
-  >
-    <option value="">Tümü</option>
-    <option value="Aksiyon">Aksiyon</option>
-    <option value="Macera">Macera</option>
-    <option value="Animasyon">Animasyon</option>
-    <option value="Komedi">Komedi</option>
-    <option value="Suç">Suç</option>
-    <option value="Belgesel">Belgesel</option>
-    <option value="Drama">Drama</option>
-    <option value="Aile">Aile</option>
-    <option value="Fantastik">Fantastik</option>
-    <option value="Tarih">Tarih</option>
-    <option value="Korku">Korku</option>
-    <option value="Müzik">Müzik</option>
-    <option value="Gizem">Gizem</option>
-    <option value="Romantik">Romantik</option>
-    <option value="Bilim Kurgu">Bilim Kurgu</option>
-    <option value="Gerilim">Gerilim</option>
-    <option value="Savaş">Savaş</option>
-    <option value="Vahşi Batı">Vahşi Batı</option>
-    {/* Kitap türleri */}
-    <option value="Kurgu">Kurgu</option>
-    <option value="Biyografi">Biyografi</option>
-    <option value="Kişisel Gelişim">Kişisel Gelişim</option>
-    <option value="Tarih">Tarih</option>
-    <option value="Bilim">Bilim</option>
-    <option value="İş">İş</option>
-    <option value="Çocuk">Çocuk</option>
-  </select>
-</div>
+  value={filterGenre}
+  onChange={(e) => setFilterGenre(e.target.value)}
+  className="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400"
+>
+  <option value="">Tümü</option>
+  
+  {/* Film Türleri - Sadece Film sekmesinde */}
+  {activeTab === 'movie' && (
+    <>
+      <option value="Aksiyon">Aksiyon</option>
+      <option value="Macera">Macera</option>
+      <option value="Animasyon">Animasyon</option>
+      <option value="Komedi">Komedi</option>
+      <option value="Suç">Suç</option>
+      <option value="Belgesel">Belgesel</option>
+      <option value="Drama">Drama</option>
+      <option value="Aile">Aile</option>
+      <option value="Fantastik">Fantastik</option>
+      <option value="Tarih">Tarih</option>
+      <option value="Korku">Korku</option>
+      <option value="Müzik">Müzik</option>
+      <option value="Gizem">Gizem</option>
+      <option value="Romantik">Romantik</option>
+      <option value="Bilim Kurgu">Bilim Kurgu</option>
+      <option value="Gerilim">Gerilim</option>
+      <option value="Savaş">Savaş</option>
+      <option value="Vahşi Batı">Vahşi Batı</option>
+    </>
+  )}
+  
+  {/* Kitap Kategorileri - Sadece Kitap sekmesinde */}
+  {activeTab === 'book' && (
+  <>
+    <option value="fiction">Kurgu</option>
+    <option value="Biography & Autobiography">Biyografi</option>
+    <option value="History">Tarih</option>
+    <option value="Science">Bilim</option>
+    <option value="Self-Help">Kişisel Gelişim</option>
+    <option value="Business & Economics">İş</option>
+    <option value="Fantasy">Fantastik</option>
+    <option value="Mystery">Gizem</option>
+    <option value="Romance">Romantik</option>
+    <option value="Thriller">Gerilim</option>
+    <option value="Horror">Korku</option>
+    <option value="Poetry">Şiir</option>
+    <option value="Philosophy">Felsefe</option>
+    <option value="Psychology">Psikoloji</option>
+    <option value="Cooking">Yemek</option>
+    <option value="Travel">Seyahat</option>
+    <option value="Religion">Din</option>
+    <option value="Art">Sanat</option>
+    <option value="Comics & Graphic Novels">Çizgi Roman</option>
+    <option value="Young Adult Fiction">Genç Kurgu</option>
+  </>
+)}
 
-      <div>
-        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-          Min. Puan
-        </label>
-        <select
-          value={filterRating}
-          onChange={(e) => setFilterRating(e.target.value)}
-          className="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400"
-        >
-          <option value="">Tümü</option>
-          <option value="3">3+</option>
-          <option value="4">4+</option>
-          <option value="5">5+</option>
-          <option value="6">6+</option>
-          <option value="7">7+</option>
-          <option value="8">8+</option>
-          <option value="9">9+</option>
-        </select>
-      </div>
-    </div>
+  
+  {/* Tümü sekmesinde her ikisi de */}
+   {/* Tümü sekmesinde */}
+      {activeTab === 'all' && (
+        <>
+          <optgroup label="🎬 Film Türleri">
+            <option value="Aksiyon">Aksiyon</option>
+            <option value="Komedi">Komedi</option>
+            <option value="Drama">Drama</option>
+          </optgroup>
+          <optgroup label="📚 Kitap Kategorileri">
+            <option value="fiction">Kurgu</option>
+            <option value="Biography & Autobiography">Biyografi</option>
+            <option value="History">Tarih</option>
+          </optgroup>
+        </>
+      )}
+    </select>
+  </div>  {/* ← TÜR DIV'İ KAPANDI */}
+
+  {/* Min. Puan Filtresi */}
+  <div>  {/* ← YENİ DIV BAŞLADI */}
+    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+      Min. Puan
+    </label>
+    <select
+      value={filterRating}
+      onChange={(e) => setFilterRating(e.target.value)}
+      className="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400"
+    >
+      <option value="">Tümü</option>
+      <option value="3">3+</option>
+      <option value="4">4+</option>
+      <option value="5">5+</option>
+      <option value="6">6+</option>
+      <option value="7">7+</option>
+      <option value="8">8+</option>
+      <option value="9">9+</option>
+    </select>
+  </div>
+
+</div> 
 
     {(filterYear || filterGenre || filterRating) && (
       <div className="mt-4 flex items-center justify-between">
@@ -393,8 +461,10 @@ useEffect(() => {
       <h2 className="text-xl font-semibold text-gray-800 dark:text-white mb-4">
   {searchQuery.trim()
     ? `🔍 Arama Sonuçları (${filteredResults.length})`
-    : filterGenre
+    : filterGenre && activeTab === 'movie'
     ? `🎬 ${filterGenre} Filmleri (${filteredResults.length})`
+    : filterGenre && activeTab === 'book'
+    ? `📚 ${filterGenre} Kitapları (${filteredResults.length})`
     : activeTab === 'book'
     ? '📚 En Yüksek Puanlı Kitaplar'
     : activeTab === 'all'

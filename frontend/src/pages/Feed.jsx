@@ -17,27 +17,36 @@ function Feed() {
   const [totalPages, setTotalPages] = useState(1);
   const [suggestions, setSuggestions] = useState([]);
   const [followLoading, setFollowLoading] = useState({});
+  const [loadingMore, setLoadingMore] = useState(false);
 
   const loadActivities = async (pageNum = 1) => {
+  if (pageNum === 1) {
     setLoading(true);
-    try {
-      const data = await getFeed(pageNum);
-      
-      if (pageNum === 1) {
-        setActivities(data.activities || []);
-      } else {
-        setActivities(prev => [...prev, ...(data.activities || [])]);
-      }
-      
-      setTotalPages(data.totalPages || 1);
-      setHasMore(pageNum < (data.totalPages || 1));
-    } catch (error) {
-      console.error('Feed yüklenemedi:', error);
-      setActivities([]);
-      setHasMore(false);
+  } else {
+    setLoadingMore(true);
+  }
+  
+  try {
+    const data = await getFeed(pageNum, 15);  // ← sayfa ve limit parametreleri
+    console.log('🎯 getFeed sonucu:', data);  // ← BU LOGU EKLE
+    if (pageNum === 1) {
+      setActivities(data.activities || []);
+    } else {
+      setActivities(prev => [...prev, ...(data.activities || [])]);
     }
-    setLoading(false);
-  };
+    
+    setPage(pageNum);  // ← Sayfa state'ini güncelle
+    setTotalPages(data.totalPages || 1);
+    setHasMore(pageNum < (data.totalPages || 1));
+  } catch (error) {
+    console.error('Feed yüklenemedi:', error);
+    setActivities([]);
+    setHasMore(false);
+  }
+  
+  setLoading(false);
+  setLoadingMore(false);
+};
 
   const loadSuggestions = async () => {
     try {
@@ -98,21 +107,38 @@ function Feed() {
             ))}
           </div>
         )}
+        {/* DEBUG LOG - BURAYA EKLE */}
+{console.log('🔍 Buton Debug:', {
+  loading,
+  hasMore,
+  activitiesLength: activities.length,
+  page,
+  totalPages,
+  buttonShouldShow: !loading && hasMore && activities.length > 0
+})}
 
         {/* Daha Fazla Yükle Butonu */}
         {!loading && hasMore && activities.length > 0 && (
-          <div className="text-center mt-8">
-            <button
-              onClick={handleLoadMore}
-              className="bg-blue-600 dark:bg-blue-700 text-white px-8 py-3 rounded-lg hover:bg-blue-700 dark:hover:bg-blue-600 transition font-semibold shadow-md"
-            >
-              📄 Daha Fazla Yükle
-            </button>
-            <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
-              Sayfa {page} / {totalPages}
-            </p>
-          </div>
-        )}
+  <div className="text-center mt-8">
+    <button
+  onClick={handleLoadMore}
+  disabled={loadingMore}
+  className="bg-blue-600 dark:bg-blue-700 text-white px-8 py-3 rounded-lg hover:bg-blue-700 dark:hover:bg-blue-600 transition font-semibold shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
+>
+  {loadingMore ? (
+    <div className="flex items-center justify-center gap-2">
+      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+      <span>Yükleniyor...</span>
+    </div>
+  ) : (
+    ' Daha Fazla Yükle'
+  )}
+</button>
+    <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
+      Sayfa {page} / {totalPages}
+    </p>
+  </div>
+)}
 
         {/* Loading (Daha fazla yüklenirken) */}
         {loading && activities.length > 0 && (

@@ -265,6 +265,71 @@ exports.getMoviesByGenre = async (req, res) => {
   }
 };
 
+// Türe göre kitaplar
+exports.getBooksByCategory = async (req, res) => {
+  try {
+    const { category } = req.query;
+    
+    if (!category) {
+      return res.status(400).json({
+        success: false,
+        message: 'Kategori belirtilmedi!'
+      });
+    }
+
+    console.log('📚 Kategoriye göre kitap aranıyor:', category);
+
+    // Google Books API - Daha geniş arama + kategori filtresi
+    const googleBooksUrl = `${process.env.GOOGLE_BOOKS_BASE_URL}/volumes?q=${encodeURIComponent(category)}&orderBy=relevance&maxResults=40&key=${process.env.GOOGLE_BOOKS_API_KEY}`;
+    
+    console.log('📡 API URL:', googleBooksUrl);
+    
+    const googleResponse = await axios.get(googleBooksUrl);
+    
+    console.log('📦 API Response:', googleResponse.data.totalItems, 'toplam sonuç');
+    
+    if (googleResponse.data.items) {
+      const books = googleResponse.data.items.map(item => ({
+        external_id: item.id,
+        title: item.volumeInfo.title,
+        type: 'book',
+        year: item.volumeInfo.publishedDate?.substring(0, 4),
+        author: item.volumeInfo.authors?.join(', ') || 'Bilinmiyor',
+        description: item.volumeInfo.description || '',
+        poster_url: item.volumeInfo.imageLinks?.thumbnail?.replace('http:', 'https:') || '',
+        page_count: item.volumeInfo.pageCount,
+        publisher: item.volumeInfo.publisher,
+        language: item.volumeInfo.language,
+        isbn: item.volumeInfo.industryIdentifiers?.[0]?.identifier,
+        categories: item.volumeInfo.categories || [],
+        vote_average: item.volumeInfo.averageRating || 0
+      }));
+
+      console.log(`✅ ${books.length} kitap bulundu`);
+
+      res.status(200).json({
+        success: true,
+        count: books.length,
+        books
+      });
+    } else {
+      console.log('❌ Hiç kitap bulunamadı');
+      res.status(200).json({
+        success: true,
+        count: 0,
+        books: []
+      });
+    }
+  } catch (error) {
+    console.error('❌ Kategoriye göre kitap hatası:', error.message);
+    res.status(500).json({
+      success: false,
+      message: 'Kitaplar alınamadı',
+      error: error.message
+    });
+  }
+};
+
 // ÇOK ÖNEMLİ: EXPORT!
 module.exports = {
   searchContent: exports.searchContent,
@@ -272,5 +337,6 @@ module.exports = {
   getPopularMovies: exports.getPopularMovies,
   getTopRated: exports.getTopRated,
   getTopRatedBooks: exports.getTopRatedBooks,
-  getMoviesByGenre: exports.getMoviesByGenre
+  getMoviesByGenre: exports.getMoviesByGenre,
+  getBooksByCategory: exports.getBooksByCategory
 };

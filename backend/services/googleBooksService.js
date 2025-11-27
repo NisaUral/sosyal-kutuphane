@@ -1,7 +1,7 @@
 const axios = require('axios');
 
 const GOOGLE_BOOKS_BASE_URL = process.env.GOOGLE_BOOKS_BASE_URL;
-
+const API_KEY = process.env.GOOGLE_BOOKS_API_KEY; 
 
 
 // Kitap Ara
