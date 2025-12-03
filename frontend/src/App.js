@@ -17,6 +17,7 @@ import Settings from './pages/Settings';
 import FollowList from './pages/FollowList';
 import ForgotPassword from './pages/ForgotPassword';  // ← YENİ
 import ResetPassword from './pages/ResetPassword';
+import DiscoverUsers from './pages/DiscoverUsers';
 // Protected Route Component
 function ProtectedRoute({ children }) {
   const { user, loading } = useAuth();
@@ -115,6 +116,12 @@ function AppRoutes() {
           <Settings />
         </ProtectedRoute>
       } />
+
+      <Route path="/discover-users" element={
+  <ProtectedRoute>
+    <DiscoverUsers />
+  </ProtectedRoute>
+} />
 
       <Route path="/follow/:userId/:type" element={
         <ProtectedRoute>

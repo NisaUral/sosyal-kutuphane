@@ -133,3 +133,15 @@ export const getUserStats = async (userId) => {
   }
 };
 
+// Kullanıcı Ara
+export const searchUsers = async (query) => {
+  try {
+    const response = await api.get('/users/search', {
+      params: { query }
+    });
+    return response.data;
+  } catch (error) {
+    throw error.response?.data?.message || 'Arama yapılamadı!';
+  }
+};
+

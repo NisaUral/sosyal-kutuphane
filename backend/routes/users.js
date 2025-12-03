@@ -53,34 +53,94 @@ const getConnection = async () => {
   });
 };
 
-// Kullanıcı Profilini Getir
-router.get('/:id', protect, async (req, res) => {
+
+
+
+// Önerilen kullanıcılar - ÖNEMLİ: /:id route'undan ÖNCE OLMALI!
+// Önerilen kullanıcılar - BASİTLEŞTİRİLMİŞ VERSİYON
+router.get('/suggestions/list', protect, async (req, res) => {
   try {
+    const userId = req.user.id;
     const connection = await getConnection();
 
+    // Kullanıcının takip ETMEDİĞİ kişileri getir (library olmadan)
     const [users] = await connection.query(
-  `SELECT 
-    id, username, email, avatar_url, bio, created_at,
-    (SELECT COUNT(*) FROM follows WHERE following_id = users.id) as followers_count,
-    (SELECT COUNT(*) FROM follows WHERE follower_id = users.id) as following_count
-  FROM users 
-  WHERE id = ?`,
-  [req.params.id]
-);
+      `SELECT 
+        u.id, 
+        u.username, 
+        u.email, 
+        u.avatar_url,
+        (SELECT COUNT(*) FROM follows WHERE following_id = u.id) as followers_count
+      FROM users u
+      WHERE u.id != ? 
+      AND u.id NOT IN (
+        SELECT following_id FROM follows WHERE follower_id = ?
+      )
+      ORDER BY followers_count DESC
+      LIMIT 5`,
+      [userId, userId]
+    );
 
     await connection.end();
 
-    if (users.length === 0) {
-      return res.status(404).json({ message: 'Kullanıcı bulunamadı' });
-    }
+    res.json({ 
+      success: true,
+      suggestions: users 
+    });
 
-    res.json({ user: users[0] });
   } catch (error) {
-    console.error('Profil getirme hatası:', error);
+    console.error('Öneri kullanıcıları hatası:', error);
     res.status(500).json({ message: 'Sunucu hatası' });
   }
 });
-// Kullanıcı İstatistikleri
+
+// Kullanıcı Arama
+router.get('/search', protect, async (req, res) => {
+   console.log('🔍 /search route çağrıldı!');  // ← EKLE
+  console.log('Query:', req.query);
+  try {
+    const { query } = req.query;
+    const userId = req.user.id;
+    console.log('User ID:', userId);           // ← EKLE
+    console.log('Arama:', query);
+
+    if (!query || query.trim().length < 2) {
+      return res.json({ success: true, users: [] });
+    }
+
+    const connection = await getConnection();
+
+    // Username'e göre ara (kendisi hariç)
+    const [users] = await connection.query(
+      `SELECT 
+        u.id, 
+        u.username, 
+        u.email, 
+        u.avatar_url,
+        u.bio,
+        (SELECT COUNT(*) FROM follows WHERE following_id = u.id) as followers_count,
+        (SELECT COUNT(*) FROM follows WHERE follower_id = ? AND following_id = u.id) > 0 as is_following
+      FROM users u
+      WHERE u.id != ? 
+      AND u.username LIKE ?
+      ORDER BY followers_count DESC
+      LIMIT 20`,
+      [userId, userId, `%${query}%`]
+    );
+
+    await connection.end();
+
+    res.json({ 
+      success: true,
+      users 
+    });
+
+  } catch (error) {
+    console.error('Kullanıcı arama hatası:', error);
+    res.status(500).json({ message: 'Sunucu hatası' });
+  }
+});
+
 router.get('/:id/stats', protect, async (req, res) => {
   try {
     const userId = req.params.id;
@@ -144,43 +204,40 @@ router.get('/:id/stats', protect, async (req, res) => {
   }
 });
 
-// Önerilen kullanıcılar - ÖNEMLİ: /:id route'undan ÖNCE OLMALI!
-// Önerilen kullanıcılar - BASİTLEŞTİRİLMİŞ VERSİYON
-router.get('/suggestions/list', protect, async (req, res) => {
+// Kullanıcı Profilini Getir
+router.get('/:id', protect, async (req, res) => {
   try {
-    const userId = req.user.id;
     const connection = await getConnection();
 
-    // Kullanıcının takip ETMEDİĞİ kişileri getir (library olmadan)
     const [users] = await connection.query(
-      `SELECT 
-        u.id, 
-        u.username, 
-        u.email, 
-        u.avatar_url,
-        (SELECT COUNT(*) FROM follows WHERE following_id = u.id) as followers_count
-      FROM users u
-      WHERE u.id != ? 
-      AND u.id NOT IN (
-        SELECT following_id FROM follows WHERE follower_id = ?
-      )
-      ORDER BY followers_count DESC
-      LIMIT 5`,
-      [userId, userId]
-    );
+  `SELECT 
+    id, username, email, avatar_url, bio, created_at,
+    (SELECT COUNT(*) FROM follows WHERE following_id = users.id) as followers_count,
+    (SELECT COUNT(*) FROM follows WHERE follower_id = users.id) as following_count
+  FROM users 
+  WHERE id = ?`,
+  [req.params.id]
+);
 
     await connection.end();
 
-    res.json({ 
-      success: true,
-      suggestions: users 
-    });
+    if (users.length === 0) {
+      return res.status(404).json({ message: 'Kullanıcı bulunamadı' });
+    }
 
+    res.json({ user: users[0] });
   } catch (error) {
-    console.error('Öneri kullanıcıları hatası:', error);
+    console.error('Profil getirme hatası:', error);
     res.status(500).json({ message: 'Sunucu hatası' });
   }
 });
+
+
+
+
+
+// Kullanıcı İstatistikleri
+
 
 // Profil Güncelle
 // Profil Güncelle
