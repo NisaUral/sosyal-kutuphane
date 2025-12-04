@@ -37,17 +37,16 @@ exports.searchBooks = async (query) => {
     });
   } catch (error) {
     console.error('Google Books arama hatası:', error.message);
-    return []; // Hata fırlatmak yerine boş dizi dönelim, uygulama çökmesin
+    return []; 
   }
 };
 
-// Kitap Detayı Al (DÜZELTİLEN KISIM BURASI)
+// Kitap Detayı Al 
 exports.getBookDetails = async (bookId) => {
-  // bookId burada bir string (örn: "tTQgEQAAQBAJ") olarak gelir.
-  // req.params KULLANILMAMALIDIR.
+  
   
   try {
-    // URL'ye API Key eklemek her zaman daha iyidir
+    
     const url = `${GOOGLE_BOOKS_BASE_URL}/volumes/${bookId}?key=${API_KEY}`;
     
     const response = await axios.get(url);
@@ -59,7 +58,7 @@ exports.getBookDetails = async (bookId) => {
       type: 'book',
       title: volumeInfo.title,
       subtitle: volumeInfo.subtitle || null,
-      description: volumeInfo.description || '', // null yerine boş string daha güvenli
+      description: volumeInfo.description || '', 
       author: volumeInfo.authors ? volumeInfo.authors.join(', ') : 'Bilinmiyor',
       year: volumeInfo.publishedDate ? volumeInfo.publishedDate.substring(0, 4) : null,
       poster_url: volumeInfo.imageLinks ? volumeInfo.imageLinks.thumbnail?.replace('http:', 'https:') : null,
@@ -70,7 +69,7 @@ exports.getBookDetails = async (bookId) => {
     };
   } catch (error) {
     console.error(`Google Books detay hatası (ID: ${bookId}):`, error.message);
-    // Hatayı yukarı fırlat ki Controller yakalasın
+   
     throw new Error('Google Books servisinden veri alınamadı.');
   }
 };

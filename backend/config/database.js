@@ -9,6 +9,10 @@ const sequelize = new Sequelize(
   {
     host: process.env.DB_HOST,  // localhost
     dialect: 'mysql',
+    timezone: '+03:00',  // ← EKLE
+    dialectOptions: {
+      timezone: '+03:00'  // ← EKLE
+    },
     logging: false,  // SQL sorgularını gösterme
     pool: {
       max: 5,        // Maksimum 5 bağlantı

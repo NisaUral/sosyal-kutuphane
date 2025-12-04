@@ -40,7 +40,7 @@ router.post('/:userId', protect, async (req, res) => {
     }
 
     // Takip et
-   // Takip et
+   
 await connection.query(
   'INSERT INTO follows (follower_id, following_id, created_at, updated_at) VALUES (?, ?, NOW(), NOW())',
   [followerId, followingId]

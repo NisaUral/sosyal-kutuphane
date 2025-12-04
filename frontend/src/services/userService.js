@@ -72,7 +72,7 @@ export const checkFollowStatus = async (userId) => {
     return { isFollowing: false };
   }
 };
-// Profil güncelle
+
 // Profil güncelleme
 export const updateProfile = async (username, email, avatar_url, bio) => {  // ← bio eklendi
   try {
@@ -89,7 +89,7 @@ export const updateProfile = async (username, email, avatar_url, bio) => {  // �
 };
 
 // Avatar yükle
-// Avatar yükle
+
 export const uploadAvatar = async (file) => {
   const formData = new FormData();
   formData.append('avatar', file);
@@ -98,7 +98,7 @@ export const uploadAvatar = async (file) => {
     method: 'POST',
     headers: {
       'Authorization': `Bearer ${localStorage.getItem('token')}`
-      // Content-Type EKLEME! FormData otomatik ayarlar
+      
     },
     body: formData
   });
@@ -112,7 +112,7 @@ export const uploadAvatar = async (file) => {
   return data;
 };
 
-// Önerilen kullanıcılar
+
 // Önerilen kullanıcılar
 export const getSuggestedUsers = async () => {
   try {

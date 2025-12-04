@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import Layout from '../components/Layout';
-import { searchContent, getPopularMovies, getTopRatedBooks, getMoviesByGenre, getBooksByCategory } from '../services/contentService';
+import { searchContent, getPopularMovies, getTopRatedBooks, getMoviesByGenre, getBooksByCategory, getPopularContent, getTopRatedContent } from '../services/contentService';
 import React from 'react';
 function Explore() {
   const navigate = useNavigate();
@@ -18,6 +18,8 @@ function Explore() {
   const [filterRating, setFilterRating] = useState('');
   const [topBooks, setTopBooks] = useState([]);
 const [showFilters, setShowFilters] = useState(false);
+const [appPopular, setAppPopular] = useState([]);      // ← Uygulama içi popüler
+const [appTopRated, setAppTopRated] = useState([]);
   // Arama fonksiyonu
   const handleSearch = useCallback(async (query = searchQuery, tab = activeTab) => {
     if (!query.trim()) {
@@ -124,28 +126,36 @@ useEffect(() => {
   };
 
   // İlk yüklemede popüler filmleri göster
+// İlk yüklemede popüler filmleri göster
 useEffect(() => {
   if (!queryParam) {
     const loadInitialContent = async () => {
       setLoading(true);
       try {
-        const [moviesData, booksData] = await Promise.all([
-          getPopularMovies(),
-          getTopRatedBooks()
+        const [moviesData, booksData, appPopularData, appTopRatedData] = await Promise.all([
+          getPopularMovies(),           // API'den popüler filmler
+          getTopRatedBooks(),           // API'den en yüksek puanlı kitaplar
+          getPopularContent(),          // ← YENİ: Uygulama içi popüler
+          getTopRatedContent()          // ← YENİ: Uygulama içi en yüksek puanlı
         ]);
+        
         setResults(moviesData.movies || []);
         setTopBooks(booksData.results || []);
+        setAppPopular(appPopularData.contents || []);        // ← YENİ
+        setAppTopRated(appTopRatedData.contents || []);      // ← YENİ
       } catch (error) {
         console.error('İlk yükleme hatası:', error);
         setResults([]);
         setTopBooks([]);
+        setAppPopular([]);      // ← YENİ
+        setAppTopRated([]);     // ← YENİ
       }
       setLoading(false);
     };
     
     loadInitialContent();
   }
-}, []); // Boş bağımlılık - sadece ilk mount'ta çalışır
+}, []);
 
 useEffect(() => {
   const filterContent = async () => {
@@ -367,10 +377,10 @@ useEffect(() => {
         </>
       )}
     </select>
-  </div>  {/* ← TÜR DIV'İ KAPANDI */}
+  </div>  
 
   {/* Min. Puan Filtresi */}
-  <div>  {/* ← YENİ DIV BAŞLADI */}
+  <div>  
     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
       Min. Puan
     </label>
@@ -454,14 +464,14 @@ useEffect(() => {
           </div>
         )}
 
-        {!loading && (filteredResults.length > 0 || results.length > 0) && (
+       {!loading && (filteredResults.length > 0 || results.length > 0 || appPopular.length > 0 || appTopRated.length > 0) && (
   <div>
-    {/* ARAMA YAPILMIŞSA GRID LAYOUT */}
     {searchQuery.trim() || filterGenre ? (
+      // ARAMA YAPILMIŞSA GRID LAYOUT
       <div>
         <h2 className="text-xl font-semibold text-gray-800 dark:text-white mb-4">
           {searchQuery.trim()
-            ? ` Arama Sonuçları (${filteredResults.length})`
+            ? `🔍 Arama Sonuçları (${filteredResults.length})`
             : `🎬 ${filterGenre} (${filteredResults.length})`}
         </h2>
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
@@ -471,17 +481,58 @@ useEffect(() => {
         </div>
       </div>
     ) : (
-      /* ARAMA YOKSA YATAY SCROLL */
+      /* ARAMA YOKSA YATAY SCROLL KATEGORİLER */
       <>
-        <HorizontalScroll
-          title=" Popüler Filmler"
-          items={filteredResults}
-        />
-        
-        {activeTab === 'all' && topBooks.length > 0 && (
+        {/* TÜMÜ SEKMESİ - HER ŞEYİ GÖSTER */}
+        {activeTab === 'all' && (
+          <>
+            {/* 1. UYGULAMA İÇİ EN POPÜLER */}
+            {appPopular.length > 0 && (
+              <HorizontalScroll
+                title="Sosyal Kütüphane'deki En Popüler İçerikler"
+                items={appPopular}
+              />
+            )}
+
+            {/* 2. UYGULAMA İÇİ EN YÜKSEK PUANLI */}
+            {appTopRated.length > 0 && (
+              <HorizontalScroll
+                title="Sosyal Kütüphane'deki En Yüksek Puanlı İçerikler"
+                items={appTopRated}
+              />
+            )}
+
+            {/* 3. API'DEN POPÜLER FİLMLER */}
+            {filteredResults.length > 0 && (
+              <HorizontalScroll
+                title=" Popüler Filmler"
+                items={filteredResults}
+              />
+            )}
+            
+            {/* 4. API'DEN EN YÜKSEK PUANLI KİTAPLAR */}
+            {topBooks.length > 0 && (
+              <HorizontalScroll
+                title=" En Yüksek Puanlı Kitaplar"
+                items={topBooks}
+              />
+            )}
+          </>
+        )}
+
+        {/* FİLMLER SEKMESİ - SADECE FİLMLER */}
+        {activeTab === 'movie' && filteredResults.length > 0 && (
           <HorizontalScroll
-            title=" En Yüksek Puanlı Kitaplar"
-            items={topBooks}
+            title=" Popüler Filmler"
+            items={filteredResults}
+          />
+        )}
+
+        {/* KİTAPLAR SEKMESİ - SADECE KİTAPLAR */}
+        {activeTab === 'book' && filteredResults.length > 0 && (
+          <HorizontalScroll
+            title=" Popüler Kitaplar"
+            items={filteredResults}
           />
         )}
       </>
@@ -510,7 +561,7 @@ useEffect(() => {
 
         {!loading && !searchQuery && results.length === 0 && (
           <div className="text-center py-12">
-            <div className="text-6xl mb-4">🔍</div>
+            
             <p className="text-gray-600 dark:text-gray-400 text-lg">
               Arama yapmak için yukarıdaki kutucuğu kullan
             </p>
@@ -551,21 +602,49 @@ function ContentCard({ content, horizontal = false }) {
           </div>
         )}
         
-        {/* Hover Overlay - Görünmez, hover'da görünür */}
+        {/* Hover Overlay */}
         <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-300 flex flex-col justify-end p-4">
           <h3 className="font-bold text-white text-base mb-2 line-clamp-2">
             {content.title}
           </h3>
           
-          <div className="flex items-center gap-3 text-sm text-gray-300">
-            {content.year && (
-              <span className="font-medium">{content.year}</span>
+          <div className="flex flex-col gap-2">
+            {/* Yıl ve API Puanı */}
+            <div className="flex items-center gap-3 text-sm text-gray-300">
+              {content.year && (
+                <span className="font-medium">{content.year}</span>
+              )}
+              {content.vote_average > 0 && (
+                <span className="flex items-center gap-1 bg-yellow-500/20 px-2 py-0.5 rounded">
+                  <span className="text-yellow-400">★</span>
+                  <span className="font-bold text-white">{content.vote_average.toFixed(1)}</span>
+                </span>
+              )}
+            </div>
+
+            {/* Uygulama İçi Puan (Hibrit içerikler için) */}
+            {content.avg_rating && (
+              <div className="flex items-center gap-1 bg-blue-500/20 px-2 py-1 rounded">
+                <span className="text-blue-400">⭐</span>
+                <span className="text-xs text-white">
+                  <span className="font-bold">{parseFloat(content.avg_rating).toFixed(1)}</span>
+                  <span className="text-gray-300 ml-1">
+                    ({content.rating_count || 0} puan)
+                  </span>
+                </span>
+              </div>
             )}
-            {content.vote_average > 0 && (
-              <span className="flex items-center gap-1 bg-yellow-500/20 px-2 py-0.5 rounded">
-                <span className="text-yellow-400">★</span>
-                <span className="font-bold text-white">{content.vote_average.toFixed(1)}</span>
-              </span>
+
+            {/* İstatistikler (Hibrit içerikler için) */}
+            {content.popularity_score && (
+              <div className="flex gap-2 text-xs text-gray-300">
+                {content.library_count > 0 && (
+                  <span>📚 {content.library_count}</span>
+                )}
+                {content.review_count > 0 && (
+                  <span>💬 {content.review_count}</span>
+                )}
+              </div>
             )}
           </div>
         </div>

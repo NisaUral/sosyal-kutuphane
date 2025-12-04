@@ -20,7 +20,7 @@ const sendEmail = async (options) => {
     to: options.email,
     subject: options.subject,
     text: options.message,
-    // html: `<p>${options.message}</p>` // İstersen HTML olarak
+    // html: `<p>${options.message}</p>` 
   };
 
   try {

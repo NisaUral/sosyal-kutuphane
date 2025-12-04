@@ -28,7 +28,7 @@ app.use(express.json());
 
 // Routes kullanımı
 app.use('/api/auth', authRoutes);
-app.use('/api/contents', contentsRoutes);  // ← contentsRoutes kullan
+app.use('/api/contents', contentsRoutes);  
 app.use('/api/ratings', ratingRoutes);
 app.use('/api/reviews', reviewRoutes);
 app.use('/api/activities', activityRoutes);
@@ -41,7 +41,7 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 app.get('/', (req, res) => {
   res.json({
-    message: '🚀 Backend çalışıyor!',
+    message: ' Backend çalışıyor!',
     version: '1.0.0',
     endpoints: {
       auth: [
@@ -82,6 +82,6 @@ app.get('/', (req, res) => {
 const PORT = process.env.PORT || 5000;
 
 app.listen(PORT, () => {
-  console.log(`🔥 Sunucu ${PORT} portunda çalışıyor`);
-  console.log(`📚 Toplam 10 route grubu aktif`);
+  console.log(` Sunucu ${PORT} portunda çalışıyor`);
+  console.log(` Toplam 10 route grubu aktif`);
 });

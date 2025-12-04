@@ -83,7 +83,8 @@ exports.getContentReviews = async (req, res) => {
       host: process.env.DB_HOST || 'localhost',
       user: process.env.DB_USER || 'root',
       password: process.env.DB_PASSWORD || '',
-      database: process.env.DB_NAME || 'sosyal_kutuphane'
+      database: process.env.DB_NAME || 'sosyal_kutuphane',
+      timezone: '+03:00'
     });
 
     const [reviews] = await connection.query(

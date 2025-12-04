@@ -13,7 +13,7 @@ export const useAuth = () => {
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true); // Başlangıçta loading true
+  const [loading, setLoading] = useState(true); 
   const navigate = useNavigate();
 
   // İlk yüklemede token kontrolü

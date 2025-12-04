@@ -2,8 +2,8 @@ const express = require('express');
 const router = express.Router();
 const mysql = require('mysql2/promise');
 const { protect } = require('../middleware/authMiddleware');
-const multer = require('multer'); // ← YENİ
-const path = require('path'); // ← YENİ
+const multer = require('multer'); 
+const path = require('path'); 
 const fs = require('fs');
 
 
@@ -234,12 +234,6 @@ router.get('/:id', protect, async (req, res) => {
 
 
 
-
-
-// Kullanıcı İstatistikleri
-
-
-// Profil Güncelle
 // Profil Güncelle
 router.put('/profile', protect, async (req, res) => {
   try {
@@ -293,7 +287,7 @@ router.put('/profile', protect, async (req, res) => {
       values.push(avatar_url || null);
     }
 
-    if (bio !== undefined) {  // ← YENİ
+    if (bio !== undefined) {  
       updates.push('bio = ?');
       values.push(bio || null);
     }

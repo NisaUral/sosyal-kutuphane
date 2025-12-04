@@ -84,7 +84,7 @@ function DiscoverUsers() {
         {/* Header */}
         <div className="mb-6">
           <h1 className="text-2xl font-bold text-gray-800 dark:text-white mb-2">
-            👥 Kullanıcıları Keşfet
+             Kullanıcıları Keşfet
           </h1>
           <p className="text-gray-600 dark:text-gray-400">
             Yeni insanlar bul ve takip et
@@ -97,7 +97,7 @@ function DiscoverUsers() {
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="🔍 Kullanıcı ara..."
+            placeholder=" Kullanıcı ara..."
             className="w-full px-4 py-3 bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 rounded-xl text-gray-900 dark:text-white placeholder-gray-400 focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-200 dark:focus:ring-blue-800 transition outline-none"
           />
         </div>

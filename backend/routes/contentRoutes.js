@@ -3,7 +3,8 @@ const router = express.Router();
 const contentController = require('../controllers/contentController');
 const { protect } = require('../middleware/authMiddleware');
 
-
+router.get('/popular', contentController.getPopularContent);  // ← YENİ
+router.get('/top-rated', contentController.getTopRatedContent);  // ← YENİ
 
 router.get('/search', contentController.searchContent);
 router.get('/popular/movies', contentController.getPopularMovies);

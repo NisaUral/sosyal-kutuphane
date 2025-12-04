@@ -28,7 +28,7 @@ function Feed() {
   
   try {
     const data = await getFeed(pageNum, 15);  // ← sayfa ve limit parametreleri
-    console.log('🎯 getFeed sonucu:', data);  // ← BU LOGU EKLE
+    console.log('🎯 getFeed sonucu:', data);  
     if (pageNum === 1) {
       setActivities(data.activities || []);
     } else {

@@ -154,10 +154,12 @@ const stats = {
         {profile.username}
       </h1>
       
-      {/* Email */}
-      <p className="text-gray-600 dark:text-gray-400 mb-4">
-        {profile.email}
-      </p>
+      {/* Email - Sadece kendi profilinde göster */}
+{isOwnProfile && (
+  <p className="text-gray-600 dark:text-gray-400 mb-4">
+    {profile.email}
+  </p>
+)}
 
       {/* Bio */}
       {profile.bio && (

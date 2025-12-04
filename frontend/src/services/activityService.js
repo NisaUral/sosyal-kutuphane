@@ -10,7 +10,7 @@ export const getFeed = async (page = 1, limit = 15) => {
     console.log('📦 Feed Service Response:', response.data);
     
     // Eğer success wrapper varsa, içindeki activities'i al
-    // Eğer success wrapper varsa, içindeki activities'i al
+    
 if (response.data.success) {
   return {
     activities: response.data.activities || [],

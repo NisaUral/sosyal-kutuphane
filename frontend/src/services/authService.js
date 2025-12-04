@@ -18,7 +18,6 @@ export const register = async (userData) => {
 };
 
 // Kullanıcı Girişi
-// Kullanıcı Girişi
 export const login = async (credentials) => {
   try {
     console.log('Sending login request with:', credentials); // Debug

@@ -19,9 +19,9 @@ function Settings() {
   });
   
   const [loading, setLoading] = useState(false);
-  const [avatarFile, setAvatarFile] = useState(null); // ← YENİ
-const [avatarPreview, setAvatarPreview] = useState(user?.avatar_url || ''); // ← YENİ
-const [uploadingAvatar, setUploadingAvatar] = useState(false); // ← YENİ
+  const [avatarFile, setAvatarFile] = useState(null); 
+const [avatarPreview, setAvatarPreview] = useState(user?.avatar_url || ''); 
+const [uploadingAvatar, setUploadingAvatar] = useState(false); 
 
   // User değişince formu güncelle
   useEffect(() => {
@@ -32,7 +32,7 @@ const [uploadingAvatar, setUploadingAvatar] = useState(false); // ← YENİ
         avatar_url: user.avatar_url || '',
         bio: user.bio || ''
       });
-      setAvatarPreview(user.avatar_url || ''); // ← YENİ
+      setAvatarPreview(user.avatar_url || ''); 
     }
   }, [user]);
 
@@ -102,7 +102,7 @@ const handleUploadAvatar = async () => {
         formData.username, 
         formData.email, 
         formData.avatar_url,
-        formData.bio  // ← YENİ
+        formData.bio  
       );
       
       // AuthContext'i güncelle

@@ -22,7 +22,7 @@ function ForgotPassword() {
       const response = await forgotPassword(email);
       setSuccess(true);
       
-      // SADECE DEVELOPMENT! Production'da kaldır
+      
       if (response.resetToken) {
         setResetToken(response.resetToken);
       }
