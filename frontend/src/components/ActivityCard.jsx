@@ -4,12 +4,14 @@ import {  useEffect } from 'react';
 import { toggleLike } from '../services/likeService';
 import UserAvatar from './UserAvatar';
 
+
 function ActivityCard({ activity , hideActions = false}) {
   const { user, content, activity_type, rating, review, created_at } = activity;
 
   const [liked, setLiked] = useState(activity.user_liked || false);
   const [likeCount, setLikeCount] = useState(activity.like_count || 0);
   const [likeLoading, setLikeLoading] = useState(false);
+  const [showFullReview, setShowFullReview] = useState(false);
 
     useEffect(() => {
     setLiked(activity.liked_by_user || false);
@@ -182,19 +184,26 @@ const getActivityText = () => {
 
 
           {/* Review */}
-          {activity_type === 'review' && review && (
-            <div className="mt-2">
-              <p className="text-gray-700 dark:text-gray-300 line-clamp-3">
-                {review.review_text}
-              </p>
-              <Link
-                to={`/content/${content.type}/${content.external_id}`}
-                className="text-blue-600 dark:text-blue-400 text-sm hover:underline mt-1 inline-block"
-              >
-                Devamını oku →
-              </Link>
-            </div>
-          )}
+{activity_type === 'review' && review && (
+  <div className="mt-2">
+    <p className="text-gray-700 dark:text-gray-300 whitespace-pre-wrap">
+      {showFullReview 
+        ? review.review_text 
+        : review.review_text.length > 150 
+          ? review.review_text.substring(0, 150) + '...' 
+          : review.review_text
+      }
+    </p>
+    {review.review_text.length > 150 && (
+      <button
+        onClick={() => setShowFullReview(!showFullReview)}
+        className="text-blue-600 dark:text-blue-400 text-sm hover:underline mt-1 inline-block"
+      >
+        {showFullReview ? '← Daha az göster' : 'Devamını oku →'}
+      </button>
+    )}
+  </div>
+)}
         </div>
       </div>
 

@@ -354,12 +354,12 @@ useEffect(() => {
    {/* Tümü sekmesinde */}
       {activeTab === 'all' && (
         <>
-          <optgroup label="🎬 Film Türleri">
+          <optgroup label="Film Türleri">
             <option value="Aksiyon">Aksiyon</option>
             <option value="Komedi">Komedi</option>
             <option value="Drama">Drama</option>
           </optgroup>
-          <optgroup label="📚 Kitap Kategorileri">
+          <optgroup label="Kitap Kategorileri">
             <option value="fiction">Kurgu</option>
             <option value="Biography & Autobiography">Biyografi</option>
             <option value="History">Tarih</option>
@@ -433,7 +433,7 @@ useEffect(() => {
                   : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
               }`}
             >
-              🎬 Filmler
+               Filmler
             </button>
             <button
               onClick={() => handleTabChange('book')}
@@ -443,7 +443,7 @@ useEffect(() => {
                   : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
               }`}
             >
-              📚 Kitaplar
+               Kitaplar
             </button>
           </div>
         </div>
@@ -460,16 +460,16 @@ useEffect(() => {
     <div className="mb-8">
       <h2 className="text-xl font-semibold text-gray-800 dark:text-white mb-4">
   {searchQuery.trim()
-    ? `🔍 Arama Sonuçları (${filteredResults.length})`
+    ? ` Arama Sonuçları (${filteredResults.length})`
     : filterGenre && activeTab === 'movie'
-    ? `🎬 ${filterGenre} Filmleri (${filteredResults.length})`
+    ? ` ${filterGenre} Filmleri (${filteredResults.length})`
     : filterGenre && activeTab === 'book'
-    ? `📚 ${filterGenre} Kitapları (${filteredResults.length})`
+    ? ` ${filterGenre} Kitapları (${filteredResults.length})`
     : activeTab === 'book'
-    ? '📚 En Yüksek Puanlı Kitaplar'
+    ? ' En Yüksek Puanlı Kitaplar'
     : activeTab === 'all'
-    ? '🔥 Popüler Filmler'
-    : '🔥 Popüler Filmler'}
+    ? ' Popüler Filmler'
+    : ' Popüler Filmler'}
 </h2>
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
         {filteredResults.map((item, index) => (

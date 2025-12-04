@@ -76,6 +76,30 @@ function Feed() {
   setFollowLoading({ ...followLoading, [userId]: false });
 };
 
+  const styles = `
+  @keyframes slide-in {
+    from {
+      opacity: 0;
+      transform: translateX(-100px);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+  
+  .animate-slide-in {
+    animation: slide-in 0.5s ease-out;
+  }
+`;
+
+// Style'ı head'e ekle
+if (typeof document !== 'undefined') {
+  const styleSheet = document.createElement('style');
+  styleSheet.textContent = styles;
+  document.head.appendChild(styleSheet);
+}
+
   useEffect(() => {
     loadActivities(1);
     loadSuggestions();
@@ -92,7 +116,7 @@ function Feed() {
       <div>
         {/* Header */}
         <div className="mb-6">
-          <h1 className="text-2xl font-bold text-gray-800 dark:text-white">📰 Ana Sayfa</h1>
+          <h1 className="text-2xl font-bold text-gray-800 dark:text-white"> Ana Sayfa</h1>
           <p className="text-gray-600 dark:text-gray-400">Takip ettiğin kişilerin aktivitelerini gör</p>
         </div>
 
@@ -100,13 +124,25 @@ function Feed() {
         {loading && page === 1 && <LoadingSpinner text="Aktiviteler yükleniyor..." />}
 
         {/* Aktiviteler */}
-        {!loading && activities.length > 0 && (
-          <div className="space-y-4">
-            {activities.map((activity) => (
-              <ActivityCard key={activity.id} activity={activity} />
-            ))}
-          </div>
-        )}
+{!loading && activities.length > 0 && (
+  <div className="flex justify-center">
+    <div className="w-full max-w-3xl space-y-4">
+      {activities.map((activity, index) => (
+        <div
+          key={activity.id}
+          className="animate-slide-in"
+          style={{
+            animationDelay: `${index * 0.1}s`,
+            opacity: 0,
+            animationFillMode: 'forwards'
+          }}
+        >
+          <ActivityCard activity={activity} />
+        </div>
+      ))}
+    </div>
+  </div>
+)}
         {/* DEBUG LOG - BURAYA EKLE */}
 {console.log('🔍 Buton Debug:', {
   loading,
@@ -204,6 +240,7 @@ function Feed() {
       </div>
     </Layout>
   );
+
 }
 
 export default Feed;
