@@ -384,48 +384,7 @@ exports.getPopularContent = async (req, res) => {
   }
 };
 
-// EN YÜKSEK PUANLILAR
-exports.getTopRatedContent = async (req, res) => {
-  try {
-    const { type } = req.query;
-    const connection = await getConnection();
 
-    const query = `
-      SELECT 
-        c.id,
-        c.external_id,
-        c.title,
-        c.type,
-        c.poster_url,
-        c.year,
-        c.vote_average,
-        COUNT(r.id) as rating_count,
-        AVG(r.score) as avg_rating
-      FROM contents c
-      INNER JOIN ratings r ON c.id = r.content_id
-      ${type ? 'WHERE c.type = ?' : ''}
-      GROUP BY c.id
-      HAVING rating_count >= 3
-      ORDER BY avg_rating DESC, rating_count DESC
-      LIMIT 20
-    `;
-
-    const params = type ? [type] : [];
-    const [contents] = await connection.query(query, params);
-
-    await connection.end();
-
-    res.json({
-      success: true,
-      contents: contents,
-      message: 'En yüksek puanlı içerikler'
-    });
-
-  } catch (error) {
-    console.error('Top rated hatası:', error);
-    res.status(500).json({ message: 'Sunucu hatası' });
-  }
-};
 
 // ÇOK ÖNEMLİ: EXPORT!
 module.exports = {

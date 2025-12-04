@@ -88,26 +88,3 @@ export const getBooksByCategory = async (category) => {
   }
 };
 
-// HİBRİT POPÜLERLİK - Uygulama içi verilere göre
-export const getPopularContent = async (type = '') => {
-  try {
-    const response = await api.get('/contents/popular', {
-      params: { type }
-    });
-    return response.data;
-  } catch (error) {
-    throw error.response?.data?.message || 'Popüler içerikler alınamadı!';
-  }
-};
-
-// EN YÜKSEK PUANLILAR - Uygulama içi verilere göre
-export const getTopRatedContent = async (type = '') => {
-  try {
-    const response = await api.get('/contents/top-rated', {
-      params: { type }
-    });
-    return response.data;
-  } catch (error) {
-    throw error.response?.data?.message || 'En yüksek puanlılar alınamadı!';
-  }
-};
