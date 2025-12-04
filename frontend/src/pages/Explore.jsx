@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import Layout from '../components/Layout';
 import { searchContent, getPopularMovies, getTopRatedBooks, getMoviesByGenre, getBooksByCategory } from '../services/contentService';
-
+import React from 'react';
 function Explore() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -455,44 +455,39 @@ useEffect(() => {
         )}
 
         {!loading && (filteredResults.length > 0 || results.length > 0) && (
-          <div>
-    {/* Filmler Bölümü */}
-    <div className="mb-8">
-      <h2 className="text-xl font-semibold text-gray-800 dark:text-white mb-4">
-  {searchQuery.trim()
-    ? ` Arama Sonuçları (${filteredResults.length})`
-    : filterGenre && activeTab === 'movie'
-    ? ` ${filterGenre} Filmleri (${filteredResults.length})`
-    : filterGenre && activeTab === 'book'
-    ? ` ${filterGenre} Kitapları (${filteredResults.length})`
-    : activeTab === 'book'
-    ? ' En Yüksek Puanlı Kitaplar'
-    : activeTab === 'all'
-    ? ' Popüler Filmler'
-    : ' Popüler Filmler'}
-</h2>
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-        {filteredResults.map((item, index) => (
-          <ContentCard key={`${item.external_id}-${index}`} content={item} />
-        ))}
-      </div>
-    </div>
-
-    {/* Kitaplar Bölümü - Sadece "Tümü" sekmesinde */}
-    {activeTab === 'all' && !searchQuery.trim() && topBooks.length > 0 && (
+  <div>
+    {/* ARAMA YAPILMIŞSA GRID LAYOUT */}
+    {searchQuery.trim() || filterGenre ? (
       <div>
         <h2 className="text-xl font-semibold text-gray-800 dark:text-white mb-4">
-          📚 En Yüksek Puanlı Kitaplar
+          {searchQuery.trim()
+            ? ` Arama Sonuçları (${filteredResults.length})`
+            : `🎬 ${filterGenre} (${filteredResults.length})`}
         </h2>
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-          {topBooks.map((item, index) => (
-            <ContentCard key={`book-${item.external_id}-${index}`} content={item} />
+          {filteredResults.map((item, index) => (
+            <ContentCard key={`${item.external_id}-${index}`} content={item} />
           ))}
         </div>
       </div>
+    ) : (
+      /* ARAMA YOKSA YATAY SCROLL */
+      <>
+        <HorizontalScroll
+          title=" Popüler Filmler"
+          items={filteredResults}
+        />
+        
+        {activeTab === 'all' && topBooks.length > 0 && (
+          <HorizontalScroll
+            title=" En Yüksek Puanlı Kitaplar"
+            items={topBooks}
+          />
+        )}
+      </>
     )}
   </div>
-        )}
+)}
 
         {!loading && filteredResults.length === 0 && results.length > 0 && (
           <div className="text-center py-12">
@@ -526,13 +521,60 @@ useEffect(() => {
   );
 }
 
-function ContentCard({ content }) {
+function ContentCard({ content, horizontal = false }) {
   const navigate = useNavigate();
 
   const handleClick = () => {
     navigate(`/content/${content.type}/${content.external_id}`);
   };
 
+  if (horizontal) {
+  // Netflix tarzı yatay scroll için
+  return (
+    <div
+      onClick={handleClick}
+      className="group relative flex-shrink-0 w-48 cursor-pointer transition-all duration-300 hover:scale-110 hover:z-10"
+    >
+      {/* Poster */}
+      <div className="relative overflow-hidden rounded-lg shadow-lg">
+        {content.poster_url ? (
+          <img
+            src={content.poster_url}
+            alt={content.title}
+            className="w-full h-72 object-cover"
+          />
+        ) : (
+          <div className="w-full h-72 bg-gray-700 flex items-center justify-center">
+            <span className="text-6xl">
+              {content.type === 'movie' ? '🎬' : '📚'}
+            </span>
+          </div>
+        )}
+        
+        {/* Hover Overlay - Görünmez, hover'da görünür */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-300 flex flex-col justify-end p-4">
+          <h3 className="font-bold text-white text-base mb-2 line-clamp-2">
+            {content.title}
+          </h3>
+          
+          <div className="flex items-center gap-3 text-sm text-gray-300">
+            {content.year && (
+              <span className="font-medium">{content.year}</span>
+            )}
+            {content.vote_average > 0 && (
+              <span className="flex items-center gap-1 bg-yellow-500/20 px-2 py-0.5 rounded">
+                <span className="text-yellow-400">★</span>
+                <span className="font-bold text-white">{content.vote_average.toFixed(1)}</span>
+              </span>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+  // Grid layout için (arama sonuçları)
   return (
     <div
       onClick={handleClick}
@@ -573,4 +615,100 @@ function ContentCard({ content }) {
   );
 }
 
+// Yatay Scroll Component - Ok butonları ile
+function HorizontalScroll({ title, items }) {
+  const scrollRef = React.useRef(null);
+  const [showLeftArrow, setShowLeftArrow] = React.useState(false);
+  const [showRightArrow, setShowRightArrow] = React.useState(true);
+
+  const scroll = (direction) => {
+    if (scrollRef.current) {
+      const scrollAmount = 800;
+      scrollRef.current.scrollBy({
+        left: direction === 'left' ? -scrollAmount : scrollAmount,
+        behavior: 'smooth'
+      });
+    }
+  };
+
+  const handleScroll = () => {
+    if (scrollRef.current) {
+      const { scrollLeft, scrollWidth, clientWidth } = scrollRef.current;
+      setShowLeftArrow(scrollLeft > 0);
+      setShowRightArrow(scrollLeft < scrollWidth - clientWidth - 10);
+    }
+  };
+
+  React.useEffect(() => {
+    const scrollContainer = scrollRef.current;
+    if (scrollContainer) {
+      scrollContainer.addEventListener('scroll', handleScroll);
+      handleScroll(); // İlk kontrol
+      return () => scrollContainer.removeEventListener('scroll', handleScroll);
+    }
+  }, []);
+
+  return (
+    <div className="mb-8 group/scroll">
+      {/* Başlık */}
+      <h2 className="text-xl font-semibold text-gray-800 dark:text-white mb-4">
+        {title}
+      </h2>
+
+      {/* Scroll Container + Ok Butonları */}
+      <div className="relative">
+        {/* Sol Ok - Hover'da görünür */}
+        {showLeftArrow && (
+          <button
+            onClick={() => scroll('left')}
+            className="absolute left-0 top-0 bottom-0 z-10 w-16 bg-gradient-to-r from-gray-900/90 to-transparent flex items-center justify-start pl-2 opacity-0 group-hover/scroll:opacity-100 transition-opacity duration-300"
+          >
+            <div className="bg-gray-800/80 hover:bg-gray-700 text-white p-3 rounded-full backdrop-blur-sm">
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              </svg>
+            </div>
+          </button>
+        )}
+
+        {/* Sağ Ok - Hover'da görünür */}
+        {showRightArrow && (
+          <button
+            onClick={() => scroll('right')}
+            className="absolute right-0 top-0 bottom-0 z-10 w-16 bg-gradient-to-l from-gray-900/90 to-transparent flex items-center justify-end pr-2 opacity-0 group-hover/scroll:opacity-100 transition-opacity duration-300"
+          >
+            <div className="bg-gray-800/80 hover:bg-gray-700 text-white p-3 rounded-full backdrop-blur-sm">
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
+            </div>
+          </button>
+        )}
+
+        {/* Scroll Area */}
+        <div
+          ref={scrollRef}
+          className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide scroll-smooth"
+        >
+          {items.map((item, index) => (
+            <ContentCard key={`${item.external_id}-${index}`} content={item} horizontal />
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default Explore;
+
+const styles = document.createElement('style');
+styles.textContent = `
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+`;
+document.head.appendChild(styles);

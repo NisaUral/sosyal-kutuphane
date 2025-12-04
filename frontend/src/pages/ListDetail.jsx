@@ -71,30 +71,35 @@ function ListDetail() {
     <Layout>
       <div>
         {/* Header */}
-        <div className="bg-white rounded-lg shadow-md p-6 mb-6">
-          <div className="flex justify-between items-start">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-800 mb-2">
-                {list.name}
-              </h1>
-              {list.description && (
-                <p className="text-gray-600 mb-4">{list.description}</p>
-              )}
-              <div className="flex items-center space-x-4 text-sm text-gray-500">
-                <span>👤 {list.username}</span>
-                <span>📦 {list.items?.length || 0} içerik</span>
-              </div>
-            </div>
-            
-            <button
-              onClick={() => navigate('/lists')}
-              className="bg-gray-200 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-300 transition"
-            >
-              ← Geri
-            </button>
-          </div>
-        </div>
-
+<div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 mb-6 transition-colors duration-200">
+  <div className="flex justify-between items-start">
+    <div>
+      {/* Başlık: Koyu modda beyaz */}
+      <h1 className="text-3xl font-bold text-gray-800 dark:text-white mb-2">
+        {list.name}
+      </h1>
+      
+      {/* Açıklama: Koyu modda açık gri */}
+      {list.description && (
+        <p className="text-gray-600 dark:text-gray-300 mb-4">{list.description}</p>
+      )}
+      
+      {/* Meta bilgiler: Koyu modda daha soluk gri */}
+      <div className="flex items-center space-x-4 text-sm text-gray-500 dark:text-gray-400">
+        <span>👤 {list.username}</span>
+        <span>📦 {list.items?.length || 0} içerik</span>
+      </div>
+    </div>
+    
+    {/* Buton: Koyu modda koyu gri arka plan ve açık metin */}
+    <button
+      onClick={() => navigate('/lists')}
+      className="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-200 px-4 py-2 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition"
+    >
+      ← Geri
+    </button>
+  </div>
+</div>
         {/* İçerikler */}
         {list.items && list.items.length > 0 ? (
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">

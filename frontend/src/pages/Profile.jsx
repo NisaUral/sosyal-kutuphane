@@ -137,70 +137,83 @@ const stats = {
   return (
     <Layout>
       <div>
-        {/* Profile Header */}
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 mb-6 border border-gray-200 dark:border-gray-700">
-          <div className="flex flex-col md:flex-row items-center md:items-start gap-6">
-            {/* Avatar */}
-            <UserAvatar user={profile} size="xl" />
+      {/* Profile Header */}
+<div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-8 mb-6 border border-gray-200 dark:border-gray-700">
+  <div className="flex items-start gap-8">
+    {/* Sol - Avatar */}
+    <div className="flex-shrink-0">
+      <div className="ring-4 ring-gray-200 dark:ring-gray-700 rounded-full overflow-hidden">
+        <UserAvatar user={profile} size="2xl" />
+      </div>
+    </div>
 
-            {/* Info */}
-            <div className="flex-1 text-center md:text-left">
-              <div className="flex items-center justify-center md:justify-start gap-4 mb-3">
-                <h1 className="text-3xl font-bold text-gray-800 dark:text-white">
-                  {profile.username}
-                </h1>
-                {!isOwnProfile && (
-                  <button
-                    onClick={handleFollowToggle}
-                    disabled={followLoading}
-                    className={`px-4 py-2 rounded-lg font-semibold transition ${
-                      isFollowing
-                        ? 'bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600'
-                        : 'bg-blue-600 dark:bg-blue-700 text-white hover:bg-blue-700 dark:hover:bg-blue-600'
-                    }`}
-                  >
-                    {followLoading ? '...' : isFollowing ? 'Takip Ediliyor' : 'Takip Et'}
-                  </button>
-                )}
-              </div>
+    {/* Orta - Bilgiler */}
+    <div className="flex-1">
+      {/* Kullanıcı Adı */}
+      <h1 className="text-2xl font-bold text-gray-800 dark:text-white mb-1">
+        {profile.username}
+      </h1>
+      
+      {/* Email */}
+      <p className="text-gray-600 dark:text-gray-400 mb-4">
+        {profile.email}
+      </p>
 
-              <p className="text-gray-600 dark:text-gray-400 mb-4">{profile.email}</p>
-
-              {/* Biyografi - */}
-              {profile.bio && (
-              <p className="text-gray-700 dark:text-gray-300 mt-4 max-w-2xl mx-auto italic">
-             "{profile.bio}"
-            </p>
-            )}
-
-              {/* Stats */}
-              <div className="flex justify-center md:justify-start gap-6 text-center">
-                <div>
-                  <div className="text-2xl font-bold text-gray-800 dark:text-white">{stats.total}</div>
-                  <div className="text-sm text-gray-600 dark:text-gray-400">Toplam</div>
-                </div>
-  
-                {/* Takipçiler */}
-                <button
-                  onClick={() => navigate(`/follow/${userId}/followers`)}
-                  className="hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg p-2 transition"
-                >
-                  <div className="text-2xl font-bold text-gray-800 dark:text-white">{profile.followers_count || 0}</div>
-                  <div className="text-sm text-gray-600 dark:text-gray-400">Takipçi</div>
-                </button>
-  
-                {/* Takip Edilenler */}
-                <button
-                  onClick={() => navigate(`/follow/${userId}/following`)}
-                  className="hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg p-2 transition"
-                >
-                  <div className="text-2xl font-bold text-gray-800 dark:text-white">{profile.following_count || 0}</div>
-                  <div className="text-sm text-gray-600 dark:text-gray-400">Takip</div>
-                </button>
-              </div>
-            </div>
-          </div>
+      {/* Bio */}
+      {profile.bio && (
+        <div className="bg-gray-100 dark:bg-gray-700/50 rounded-xl px-4 py-3 max-w-2xl">
+          <p className="text-gray-700 dark:text-gray-300 italic">
+            "{profile.bio}"
+          </p>
         </div>
+      )}
+    </div>
+
+    {/* Sağ - Stats Kartları */}
+    <div className="flex gap-3">
+      {/* Toplam */}
+      <div className="bg-gray-100 dark:bg-gray-700 rounded-xl p-4 text-center min-w-[80px] border-2 border-gray-200 dark:border-gray-600">
+        <div className="text-2xl font-bold text-gray-800 dark:text-white">{stats.total}</div>
+        <div className="text-xs text-gray-600 dark:text-gray-400 mt-1">Toplam</div>
+      </div>
+
+      {/* Takipçiler */}
+      <button
+        onClick={() => navigate(`/follow/${userId}/followers`)}
+        className="bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-xl p-4 text-center min-w-[80px] border-2 border-gray-200 dark:border-gray-600 transition"
+      >
+        <div className="text-2xl font-bold text-gray-800 dark:text-white">{profile.followers_count || 0}</div>
+        <div className="text-xs text-gray-600 dark:text-gray-400 mt-1">Takipçi</div>
+      </button>
+
+      {/* Takip */}
+      <button
+        onClick={() => navigate(`/follow/${userId}/following`)}
+        className="bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-xl p-4 text-center min-w-[80px] border-2 border-gray-200 dark:border-gray-600 transition"
+      >
+        <div className="text-2xl font-bold text-gray-800 dark:text-white">{profile.following_count || 0}</div>
+        <div className="text-xs text-gray-600 dark:text-gray-400 mt-1">Takip</div>
+      </button>
+    </div>
+  </div>
+
+  {/* Takip Et Butonu - Alt Kısımda */}
+  {!isOwnProfile && (
+    <div className="mt-6 flex justify-end">
+      <button
+        onClick={handleFollowToggle}
+        disabled={followLoading}
+        className={`px-8 py-2.5 rounded-xl font-semibold transition ${
+          isFollowing
+            ? 'bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600'
+            : 'bg-blue-600 text-white hover:bg-blue-700 shadow-md'
+        }`}
+      >
+        {followLoading ? '...' : isFollowing ? '✓ Takip Ediliyor' : '+ Takip Et'}
+      </button>
+    </div>
+  )}
+</div>
 
         {/* Tabs */}
         <div className="flex space-x-2 mb-6">
@@ -212,7 +225,7 @@ const stats = {
                 : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-700'
             }`}
           >
-            📚 Kütüphane ({stats.total})
+             Kütüphane ({stats.total})
           </button>
           <button
   onClick={() => handleTabChange('activities')}
@@ -239,7 +252,7 @@ const stats = {
                     : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600'
                 }`}
               >
-                📚 Tümü ({stats.total})
+                 Tümü ({stats.total})
               </button>
               <button
                 onClick={() => setLibraryFilter('watched')}
@@ -249,7 +262,7 @@ const stats = {
                     : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600'
                 }`}
               >
-                🎬 İzledim ({stats.watched})
+                 İzledim ({stats.watched})
               </button>
               <button
                 onClick={() => setLibraryFilter('to_watch')}
@@ -259,7 +272,7 @@ const stats = {
                     : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600'
                 }`}
               >
-                📺 İzlenecek ({stats.to_watch})
+                 İzlenecek ({stats.to_watch})
               </button>
               <button
                 onClick={() => setLibraryFilter('read')}
@@ -269,7 +282,7 @@ const stats = {
                     : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600'
                 }`}
               >
-                📖 Okudum ({stats.read})
+                 Okudum ({stats.read})
               </button>
               <button
                 onClick={() => setLibraryFilter('to_read')}
@@ -279,7 +292,7 @@ const stats = {
                     : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600'
                 }`}
               >
-                📚 Okunacak ({stats.to_read})
+                 Okunacak ({stats.to_read})
               </button>
             </div>
 

@@ -330,6 +330,103 @@ exports.getBooksByCategory = async (req, res) => {
   }
 };
 
+// HİBRİT POPÜLERLİK SİSTEMİ
+exports.getPopularContent = async (req, res) => {
+  try {
+    const { type } = req.query; // 'movie' veya 'book'
+    const connection = await getConnection();
+
+    // Veritabanından popülerlik skorlarını hesapla
+    const query = `
+      SELECT 
+        c.id,
+        c.external_id,
+        c.title,
+        c.type,
+        c.poster_url,
+        c.year,
+        c.vote_average,
+        COUNT(DISTINCT ul.id) as library_count,
+        COUNT(DISTINCT r.id) as rating_count,
+        COUNT(DISTINCT rv.id) as review_count,
+        AVG(r.score) as avg_rating,
+        (
+          COUNT(DISTINCT ul.id) * 3 +
+          COUNT(DISTINCT r.id) * 5 +
+          COUNT(DISTINCT rv.id) * 7 +
+          COALESCE(AVG(r.score), 0) * 2
+        ) as popularity_score
+      FROM contents c
+      LEFT JOIN user_library ul ON c.id = ul.content_id
+      LEFT JOIN ratings r ON c.id = r.content_id
+      LEFT JOIN reviews rv ON c.id = rv.content_id
+      ${type ? 'WHERE c.type = ?' : ''}
+      GROUP BY c.id
+      HAVING popularity_score > 0
+      ORDER BY popularity_score DESC, library_count DESC
+      LIMIT 20
+    `;
+
+    const params = type ? [type] : [];
+    const [contents] = await connection.query(query, params);
+
+    await connection.end();
+
+    res.json({
+      success: true,
+      contents: contents,
+      message: 'Uygulama içi verilerine göre popüler içerikler'
+    });
+
+  } catch (error) {
+    console.error('Popüler içerik hatası:', error);
+    res.status(500).json({ message: 'Sunucu hatası' });
+  }
+};
+
+// EN YÜKSEK PUANLILAR
+exports.getTopRatedContent = async (req, res) => {
+  try {
+    const { type } = req.query;
+    const connection = await getConnection();
+
+    const query = `
+      SELECT 
+        c.id,
+        c.external_id,
+        c.title,
+        c.type,
+        c.poster_url,
+        c.year,
+        c.vote_average,
+        COUNT(r.id) as rating_count,
+        AVG(r.score) as avg_rating
+      FROM contents c
+      INNER JOIN ratings r ON c.id = r.content_id
+      ${type ? 'WHERE c.type = ?' : ''}
+      GROUP BY c.id
+      HAVING rating_count >= 3
+      ORDER BY avg_rating DESC, rating_count DESC
+      LIMIT 20
+    `;
+
+    const params = type ? [type] : [];
+    const [contents] = await connection.query(query, params);
+
+    await connection.end();
+
+    res.json({
+      success: true,
+      contents: contents,
+      message: 'En yüksek puanlı içerikler'
+    });
+
+  } catch (error) {
+    console.error('Top rated hatası:', error);
+    res.status(500).json({ message: 'Sunucu hatası' });
+  }
+};
+
 // ÇOK ÖNEMLİ: EXPORT!
 module.exports = {
   searchContent: exports.searchContent,

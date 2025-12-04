@@ -25,7 +25,7 @@ function ContentCard({ content }) {
 
       {/* Info */}
       <div className="p-4">
-        <h3 className="font-semibold text-gray-800 line-clamp-2 mb-2">
+        <h3 className="font-semibold text-gray-800 dark:text-white line-clamp-2 mb-2">
           {title}
         </h3>
         <div className="flex items-center justify-between text-sm text-gray-600">
